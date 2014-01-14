@@ -73,7 +73,7 @@ So how can we reverse that knowledge? That's the goal of MvvmNotificationChainer
 		get
 		{
 			myChainedNotifications.Create()
-									.Register (cnd => cnd.On (this, () => Example2Int1)
+									.Register (cn => cn.On (this, () => Example2Int1)
 														.On (this, () => Example2Int2)
 														.AndCall (RaisePropertyChanged))
 									.Finish ();
@@ -102,11 +102,11 @@ Here's the ChainedNotificationCollection.Create method:
 		return cnd;
 	}
 
-[CallerMemberName] is used so that there is compile-time property name safety w/o using Expression<Func<T>>, and then you don't have to specify the chainedPropertyName parameter. Unfortunately [CallerMemberName] doesn't seem to be PCL-compatible, so this functionality will have to be implemented on the platform-specific project.
+[CallerMemberName] is used so that there is compile-time property name safety w/o using Expression&lt;Func&lt;T&gt;&gt;, and then you don't have to specify the chainedPropertyName parameter. Unfortunately [CallerMemberName] doesn't seem to be PCL-compatible, so this functionality will have to be implemented on the platform-specific project.
 
-Use the ChainedNotification.On<T> methods to supply a lambda Expression to specify which changed properties to watch.
+Use the ChainedNotification.On&lt;T&gt; methods to supply a lambda Expression to specify which changed properties to watch.
 
-ChainedNotification is smart enough to Register() just once - therefore you can use Expression<Func<T>> to have compile-time property name safety but only pay the performance penalty for the initial call. After Finish() is called, the other methods won't do anything.
+ChainedNotification is smart enough to Register() just once - therefore you can use Expression&lt;Func&lt;T&gt;&gt; to have compile-time property name safety but only pay the performance penalty for the initial call. After Finish() is called, the other methods won't do anything.
 
 ChainedNotification/Collection also implement IDisposable - when disposed, they will unregister event handlers.
 
@@ -119,12 +119,13 @@ Implemented Features:
 * Performs ProperyChanged for a chained property whenever a watched property changes
 * Compile-time property name safety for easy refactoring
 * Executes just once per chain, trivial performance hit on initialization
+* Bolt-on code: No need to change base classes, or extensively modify existing ViewModels
 
 To Dos:
 * Write unit tests (I know, I suck at TDD)
 
 Caveats:
-* You can probably use Reactive Extensions to solve this problem, but I still can't grok it yet. This just seems a lot more straightfoward, and doesn't require extensive rewriting of existing ViewModels.
+* You can probably use Reactive Extensions to solve this problem, but I still can't grok it yet. MvvmNotificationChainer just seems a lot more straightfoward, and doesn't require extensive rewriting of existing ViewModels.
 
 Shout-outs
 ----------

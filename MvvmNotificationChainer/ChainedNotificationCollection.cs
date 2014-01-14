@@ -7,6 +7,11 @@ using System.Text;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
+    /// <summary>
+    /// Contains multiple ChainedNotifications.
+    /// Prevents duplication of ChainedNotifications by chained property name.
+    /// When disposing, calls Dispose on all ChainedNotifications.
+    /// </summary>
     public class ChainedNotificationCollection : IDisposable
     {
         private readonly Dictionary<String, ChainedNotification> myChainedNotifications = new Dictionary<string, ChainedNotification>();

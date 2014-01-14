@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+/*
+ * By including these, the compiler will honor these attributes even in a PCL!
+ * They are declared as internal so that they won't conflict when this PCL is referenced by non-PCLs
+ */
+
 namespace System.Runtime.CompilerServices
 {
     // Summary:

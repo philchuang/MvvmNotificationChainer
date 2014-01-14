@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
+    /// <summary>
+    /// Used internally by ChainedNotification. Observes multiple properties on a single object.
+    /// </summary>
     internal class ChainedNotificationHandler : IDisposable
     {
         public event PropertyChangedEventHandler NotifyingPropertyChanged = delegate { };
