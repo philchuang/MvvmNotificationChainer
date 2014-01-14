@@ -110,11 +110,10 @@ namespace Demo
         {
             get
             {
-                myChainedNotifications.Create ()
-                                      .Register (cnd => cnd.On (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h, () => Example3Int1)
-                                                           .On (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h, () => Example3Int2)
-                                                           .AndCall (RaisePropertyChanged))
-                                      .Finish ();
+                CreateChain ()
+                    .Register (cnd => cnd.On (() => Example3Int1)
+                                         .On (() => Example3Int2))
+                    .Finish ();
 
                 return myExample3Int1 + myExample3Int2;
             }

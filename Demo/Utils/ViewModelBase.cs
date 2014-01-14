@@ -45,5 +45,13 @@ namespace Demo.Utils
         {
             myChainedNotifications.Dispose();
         }
+
+        protected ChainedNotification CreateChain([CallerMemberName] String propertyName = null)
+        {
+            var cn = myChainedNotifications.Create(propertyName);
+            cn.SetDefaultNotifier(this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
+            cn.AndCall (RaisePropertyChanged);
+            return cn;
+        }
     }
 }

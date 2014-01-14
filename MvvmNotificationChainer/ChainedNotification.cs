@@ -28,6 +28,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         public bool IsFinished { get; private set; }
 
+		private object DefaultNotifyingObject { get; set; }
+		private Action<PropertyChangedEventHandler> DefaultAddEventAction { get; set; }
+		private Action<PropertyChangedEventHandler> DefaultRemoveEventAction { get; set; }
+
         private readonly Dictionary<Object, ChainedNotificationHandler> myNotifierToPropertyNamesMap;
         private readonly PropertyChangedEventHandler myDelegate;
 
@@ -61,6 +65,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             NotifyingPropertyChanged = null;
         }
 
+        public void SetDefaultNotifier(Object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction)
+        {
+            DefaultNotifyingObject = notifyingObject;
+            DefaultAddEventAction = addEventAction;
+            DefaultRemoveEventAction = removeEventAction;
+        }
+
         /// <summary>
         /// Performs the registration action on the current ChainedNotification (if not yet finished).
         /// </summary>
@@ -75,6 +86,28 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             registrationAction(this);
 
             return this;
+        }
+
+        /// <summary>
+        /// Specifies property name to observe on the default notifying object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propGet"></param>
+        /// <returns></returns>
+        public ChainedNotification On<T>(Expression<Func<T>> propGet)
+        {
+	        return On<T> (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, propGet.GetPropertyName ());
+        }
+
+        /// <summary>
+        /// Specifies property name to observe on the default notifying object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+		/// <param name="propertyName"></param>
+        /// <returns></returns>
+        public ChainedNotification On<T>(String propertyName)
+        {
+			return On<T> (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, propertyName);
         }
 
         /// <summary>
@@ -168,5 +201,5 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             IsFinished = true;
         }
-    }
+	}
 }

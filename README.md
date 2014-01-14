@@ -123,6 +123,7 @@ Implemented Features:
 
 To Dos:
 * Write unit tests (I know, I suck at TDD)
+* Support for NotifyCollectionChangedEventHandler
 
 Caveats:
 * You can probably use Reactive Extensions to solve this problem, but I still can't grok it yet. MvvmNotificationChainer just seems a lot more straightfoward, and doesn't require extensive rewriting of existing ViewModels.
