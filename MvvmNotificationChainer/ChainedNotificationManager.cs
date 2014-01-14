@@ -8,11 +8,11 @@ using System.Text;
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
     /// <summary>
-    /// Contains multiple ChainedNotifications.
+    /// Contains multiple ChainedNotifications, intended to be used 1 per instance.
     /// Prevents duplication of ChainedNotifications by chained property name.
     /// When disposing, calls Dispose on all ChainedNotifications.
     /// </summary>
-    public class ChainedNotificationCollection : IDisposable
+    public class ChainedNotificationManager : IDisposable
     {
         private readonly Dictionary<String, ChainedNotification> myChainedNotifications = new Dictionary<string, ChainedNotification>();
 

@@ -44,7 +44,7 @@ What bugs me about this approach is that Int1 and Int2 have to know about Sum. I
 
 So how can we reverse that knowledge? That's the goal of MvvmNotificationChainer:
 
-	protected readonly ChainedNotificationCollection myChainedNotifications = new ChainedNotificationCollection();
+	protected readonly ChainedNotificationManager myChainedNotifications = new ChainedNotificationManager();
 
 	private int myInt1;
 	public int Int1
@@ -82,9 +82,9 @@ So how can we reverse that knowledge? That's the goal of MvvmNotificationChainer
 		}
 	}
 
-Now, with the help of ChainedNotificationCollection, only Sum has to know that it depends on Int1 and Int2.
+Now, with the help of ChainedNotificationManager, only Sum has to know that it depends on Int1 and Int2.
 
-Here's the ChainedNotificationCollection.Create method:
+Here's the ChainedNotificationManager.Create method:
 
 	/// <summary>
 	/// Creates a ChainedNotification for the calling property, or returns an existing instance
@@ -108,7 +108,7 @@ Use the ChainedNotification.On&lt;T&gt; methods to supply a lambda Expression to
 
 ChainedNotification is smart enough to Register() just once - therefore you can use Expression&lt;Func&lt;T&gt;&gt; to have compile-time property name safety but only pay the performance penalty for the initial call. After Finish() is called, the other methods won't do anything.
 
-ChainedNotification/Collection also implement IDisposable - when disposed, they will unregister event handlers.
+ChainedNotification/Manager also implement IDisposable - when disposed, they will unregister event handlers.
 
 Status
 ------

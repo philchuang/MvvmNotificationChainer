@@ -39,7 +39,7 @@ namespace Demo.Utils
             }
         }
 
-        protected readonly ChainedNotificationCollection myChainedNotifications = new ChainedNotificationCollection();
+        protected readonly ChainedNotificationManager myChainedNotifications = new ChainedNotificationManager();
 
         public virtual void Dispose()
         {
