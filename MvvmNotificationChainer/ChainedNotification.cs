@@ -65,11 +65,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             NotifyingPropertyChanged = null;
         }
 
-        public void SetDefaultNotifier(Object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction)
+        public ChainedNotification AndSetDefaultNotifier(Object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction)
         {
             DefaultNotifyingObject = notifyingObject;
             DefaultAddEventAction = addEventAction;
             DefaultRemoveEventAction = removeEventAction;
+            return this;
         }
 
         /// <summary>

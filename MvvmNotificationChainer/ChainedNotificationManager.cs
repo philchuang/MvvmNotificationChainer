@@ -40,5 +40,18 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             return cnd;
         }
+
+        /// <summary>
+        /// Creates a new ChainedNotification for the calling property
+        /// </summary>
+        /// <param name="chainedPropertyName">Name of the property that depends on other properties</param>
+        /// <returns></returns>
+        public ChainedNotification Get([CallerMemberName] string chainedPropertyName = null)
+        {
+            chainedPropertyName.ThrowIfNull("chainedPropertyName");
+
+            ChainedNotification cnd;
+            return myChainedNotifications.TryGetValue(chainedPropertyName, out cnd) ? cnd : null;
+        }
     }
 }
