@@ -173,7 +173,7 @@ namespace Demo
                 // notify when Example4Randomizer and Example4Randomizer.Int changes
                 CreateChain ()
                     .Register (cn => cn.On (() => Example4Randomizer,
-                                            e4r => e4r.Int))
+                                            rig => rig.Int))
                     .Finish ();
 
                 return Example4Randomizer != null ? Example4Randomizer.Int : -1;
@@ -201,7 +201,7 @@ namespace Demo
 
         public RandomIntGenerator ()
         {
-            Randomize ();
+            Int = 0;
         }
 
         public void Randomize ()

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
@@ -111,7 +109,6 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Specifies property name to observe on the default notifying object.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="propertyName"></param>
         /// <returns></returns>
         public ChainedNotification On (String propertyName)
@@ -134,6 +131,22 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             propGetter.ThrowIfNull ("propGetter");
 
             return On (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h, propGetter.GetPropertyName ());
+        }
+
+        /// <summary>
+        /// Specifies an INotifyPropertyChanged object and property name to observe.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public ChainedNotification On (INotifyPropertyChanged notifyingObject, string propertyName)
+        {
+            if (IsFinished) return this;
+
+            notifyingObject.ThrowIfNull ("notifyingObject");
+            propertyName.ThrowIfNullOrBlank ("propertyName");
+
+            return On (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h, propertyName);
         }
 
         /// <summary>
@@ -204,7 +217,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public ChainedNotification On<T1, T2> (
             Expression<Func<T1>> propGetter,
             Expression<Func<T1, T2>> subPropGetter)
-            where T1 : INotifyPropertyChanged
+            where T1 : class, INotifyPropertyChanged
         {
             if (IsFinished) return this;
 
@@ -228,7 +241,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Action<PropertyChangedEventHandler> removeEventAction,
             Expression<Func<T1>> propGetter,
             Expression<Func<T1, T2>> subPropGetter)
-            where T1 : INotifyPropertyChanged
+            where T1 : class, INotifyPropertyChanged
         {
             if (IsFinished) return this;
 
@@ -240,10 +253,49 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
              * 2.3) if it is null and has not been chained, do nothing
              * 2.4) if it is null and has already been chained, dispose the chain
              */
-            // need to create a new kind of handler
-            // - only handles a single property
-            // - can get and retain the property value
-            throw new NotImplementedException ();
+
+            // chain Parent.Property to this.DependentPropertyName
+            // TODO fix this because parentChain is "this"
+            var parentChain = On (notifyingObject, addEventAction, removeEventAction, propGetter.GetPropertyName ());
+
+            // these variables will be implicitly captured by the lambda
+            var propGetterCompiled = propGetter.Compile ();
+            var lastPropertyValue = (T1) null;
+            var subChainedNotification = (ChainedNotification) null;
+
+            // TODO rethink this because this isn't being called on the right object
+
+            parentChain.AndCall ((notifyingProperty, dependentProperty) =>
+                                 {
+                                     var currentPropertyValue = propGetterCompiled ();
+                                     if (currentPropertyValue == null)
+                                     {
+                                         // no change in parent object
+                                         if (lastPropertyValue == null) return;
+
+                                         subChainedNotification.ThrowIfNull ("subChainedNotification");
+
+                                         // dispose of the chain against lastPropertyValue
+                                         subChainedNotification.Dispose();
+                                         subChainedNotification = null;
+
+                                         lastPropertyValue = null;
+                                         return;
+                                     }
+
+                                     // no change in parent object
+                                     if (ReferenceEquals (lastPropertyValue, currentPropertyValue)) return;
+
+                                     // subchain links ParentProperty.ChildProperty to notification chain for ParentProperty
+                                     subChainedNotification = new ChainedNotification (DependentPropertyName);
+                                     subChainedNotification.On (currentPropertyValue, subPropGetter.GetPropertyName ())
+                                                           .AndCall (parentChain.NotifyingPropertyChanged)
+                                                           .Finish();
+
+                                     lastPropertyValue = currentPropertyValue;
+                                 });
+            parentChain.Finish();
+
             return this;
         }
 

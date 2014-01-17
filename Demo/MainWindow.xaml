@@ -54,9 +54,9 @@
         <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="5" TextWrapping="Wrap" 
                    Text="Primary Properties notifying on PropertyChangedInternal with chained Secondary Property notifications" Margin="5,5,5,15" />
 
-        <Grid Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="6">
-            
-        </Grid>
+        <Button Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="6" Margin="10,5"
+                Content="{Binding Example4CommandText}" Command="{Binding Example4Command}" />
+        <TextBlock Grid.Column="4" Grid.Row="6" Text="{Binding Example4Int}" />
 
         <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="7" TextWrapping="Wrap" 
                    Text="Chaining on Property's Property" Margin="5,5,5,15" />
