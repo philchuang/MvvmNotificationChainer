@@ -18,30 +18,31 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         private readonly PropertyChangedEventHandler myDelegate;
         private Action<PropertyChangedEventHandler> myRemoveEventHandlerAction;
 
-        public ChainedNotificationHandler(INotifyPropertyChanged notifyingObject)
+        public ChainedNotificationHandler (INotifyPropertyChanged notifyingObject)
         {
-            notifyingObject.ThrowIfNull("notifyingObject");
+            notifyingObject.ThrowIfNull ("notifyingObject");
 
-            NotifyingPropertyNames = new List<string>();
+            NotifyingPropertyNames = new List<string> ();
             myDelegate = OnPropertyChanged;
 
             notifyingObject.PropertyChanged += myDelegate;
             myRemoveEventHandlerAction = h => notifyingObject.PropertyChanged -= h;
         }
 
-        public ChainedNotificationHandler(Action<PropertyChangedEventHandler> addEventHandlerAction, Action<PropertyChangedEventHandler> removeEventHandlerAction)
+        public ChainedNotificationHandler (Action<PropertyChangedEventHandler> addEventHandlerAction,
+                                           Action<PropertyChangedEventHandler> removeEventHandlerAction)
         {
-            addEventHandlerAction.ThrowIfNull("addEventHandlerAction");
-            removeEventHandlerAction.ThrowIfNull("removeEventHandlerAction");
+            addEventHandlerAction.ThrowIfNull ("addEventHandlerAction");
+            removeEventHandlerAction.ThrowIfNull ("removeEventHandlerAction");
 
-            NotifyingPropertyNames = new List<string>();
+            NotifyingPropertyNames = new List<string> ();
             myDelegate = OnPropertyChanged;
 
-            addEventHandlerAction(myDelegate);
+            addEventHandlerAction (myDelegate);
             myRemoveEventHandlerAction = removeEventHandlerAction;
         }
 
-        public void Dispose()
+        public void Dispose ()
         {
             if (myRemoveEventHandlerAction != null)
             {
@@ -52,7 +53,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             }
         }
 
-        private void OnPropertyChanged(Object sender, PropertyChangedEventArgs args)
+        private void OnPropertyChanged (Object sender, PropertyChangedEventArgs args)
         {
             if (NotifyingPropertyNames.Contains (args.PropertyName))
             {

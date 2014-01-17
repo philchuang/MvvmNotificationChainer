@@ -23,8 +23,8 @@ namespace Demo
             set
             {
                 myExample1Int1 = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(() => Example1IntSum);
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => Example1IntSum);
             }
         }
 
@@ -35,8 +35,8 @@ namespace Demo
             set
             {
                 myExample1Int2 = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(() => Example1IntSum);
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => Example1IntSum);
             }
         }
 
@@ -56,7 +56,7 @@ namespace Demo
             set
             {
                 myExample2Int1 = value;
-                RaisePropertyChanged();
+                RaisePropertyChanged ();
             }
         }
 
@@ -67,7 +67,7 @@ namespace Demo
             set
             {
                 myExample2Int2 = value;
-                RaisePropertyChanged();
+                RaisePropertyChanged ();
             }
         }
 
@@ -84,7 +84,7 @@ namespace Demo
                 return myExample2Int1 + myExample2Int2;
             }
         }
- 
+
         // ----- the new way of doing chained properties ------------------------------------------
         // ----- this variation allows any PropertyChangedEventHandler to be chained (not just INotifyPropertyChanged.PropertyChanged)
 
@@ -95,7 +95,7 @@ namespace Demo
             set
             {
                 myExample3Int1 = value;
-                RaisePropertyChanged();
+                RaisePropertyChanged ();
             }
         }
 
@@ -106,7 +106,7 @@ namespace Demo
             set
             {
                 myExample3Int2 = value;
-                RaisePropertyChanged();
+                RaisePropertyChanged ();
             }
         }
 
@@ -122,7 +122,7 @@ namespace Demo
                 return myExample3Int1 + myExample3Int2;
             }
         }
- 
+
         // ----- sub-property chaining ------------------------------------------
         // ----- demonstrates chaining on a Property's Property
 
@@ -132,21 +132,22 @@ namespace Demo
                                                                      "Randomize()",
                                                                      "Clear Randomizer",
                                                                  };
+
         private int m_Example4CommandTextIndex = 0;
+
         public String Example4CommandText
         { get { return s_Example4CommandText[m_Example4CommandTextIndex]; } }
 
-        [CommandProperty(commandType: typeof (DelegateCommand))]
-        public ICommand Example4Command
-        { get; set; }
+        [CommandProperty (commandType: typeof (DelegateCommand))]
+        public ICommand Example4Command { get; set; }
 
         [CommandExecuteMethod]
         private void ExecuteExample4 ()
         {
             if (m_Example4CommandTextIndex == 0)
-                Example4Randomizer = new RandomIntGenerator();
+                Example4Randomizer = new RandomIntGenerator ();
             else if (m_Example4CommandTextIndex == 1)
-                Example4Randomizer.Randomize();
+                Example4Randomizer.Randomize ();
             else if (m_Example4CommandTextIndex == 2)
                 Example4Randomizer = null;
 
@@ -161,7 +162,7 @@ namespace Demo
             set
             {
                 myExample4Randomizer = value;
-                RaisePropertyChanged();
+                RaisePropertyChanged ();
             }
         }
 

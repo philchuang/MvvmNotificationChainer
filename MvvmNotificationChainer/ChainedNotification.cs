@@ -71,7 +71,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return AndSetDefaultNotifyingObject (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h);
         }
 
-        public ChainedNotification AndSetDefaultNotifyingObject (Object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction)
+        public ChainedNotification AndSetDefaultNotifyingObject (Object notifyingObject,
+                                                                 Action<PropertyChangedEventHandler> addEventAction,
+                                                                 Action<PropertyChangedEventHandler> removeEventAction)
         {
             DefaultNotifyingObject = notifyingObject;
             DefaultAddEventAction = addEventAction;
@@ -144,9 +146,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="propGetter"></param>
         /// <returns></returns>
         public ChainedNotification On<T> (
-            Object notifyingObject, 
-            Action<PropertyChangedEventHandler> addEventAction, 
-            Action<PropertyChangedEventHandler> removeEventAction, 
+            Object notifyingObject,
+            Action<PropertyChangedEventHandler> addEventAction,
+            Action<PropertyChangedEventHandler> removeEventAction,
             Expression<Func<T>> propGetter)
         {
             if (IsFinished) return this;
@@ -167,9 +169,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="propertyName"></param>
         /// <returns></returns>
         public ChainedNotification On (
-            Object notifyingObject, 
-            Action<PropertyChangedEventHandler> addEventAction, 
-            Action<PropertyChangedEventHandler> removeEventAction, 
+            Object notifyingObject,
+            Action<PropertyChangedEventHandler> addEventAction,
+            Action<PropertyChangedEventHandler> removeEventAction,
             String propertyName)
         {
             if (IsFinished) return this;
