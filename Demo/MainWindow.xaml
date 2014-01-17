@@ -6,12 +6,18 @@
         xmlns:demo="clr-namespace:Demo"
         mc:Ignorable="d" 
         d:DataContext="{Binding Source={d:DesignInstance Type=demo:MainWindowViewModel, IsDesignTimeCreatable=True}}"
-        Title="MainWindow" Height="400" Width="500">
+        Title="MainWindow" Height="600" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -26,18 +32,40 @@
         <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding Example1Int2}" Margin="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="3" Grid.Row="0" Text="=" Margin="10"/>
         <TextBlock Grid.Column="4" Grid.Row="0" Text="{Binding Example1IntSum}" Margin="10" />
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" TextWrapping="Wrap" 
+                   Text="Primary Properties raising Secondary Property notifications" Margin="5,5,5,15" />
         
-        <TextBlock Grid.Column="0" Grid.Row="1" Text="Example 2" Margin="10" />
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Example2Int1}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Example2Int2}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBlock Grid.Column="3" Grid.Row="1" Text="=" Margin="10"/>
-        <TextBlock Grid.Column="4" Grid.Row="1" Text="{Binding Example2IntSum}" Margin="10" />
-        
-        <TextBlock Grid.Column="0" Grid.Row="2" Text="Example 3" Margin="10" />
-        <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Example3Int1}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Example3Int2}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Example 2" Margin="10" />
+        <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Example2Int1}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Example2Int2}" Margin="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="3" Grid.Row="2" Text="=" Margin="10"/>
-        <TextBlock Grid.Column="4" Grid.Row="2" Text="{Binding Example3IntSum}" Margin="10" />
+        <TextBlock Grid.Column="4" Grid.Row="2" Text="{Binding Example2IntSum}" Margin="10" />
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="3" TextWrapping="Wrap" 
+                   Text="Primary Properties notifying on PropertyChanged with chained Secondary Property notifications" Margin="5,5,5,15" />
+
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Example 3" Margin="10" />
+        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding Example3Int1}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Example3Int2}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBlock Grid.Column="3" Grid.Row="4" Text="=" Margin="10"/>
+        <TextBlock Grid.Column="4" Grid.Row="4" Text="{Binding Example3IntSum}" Margin="10" />
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="5" TextWrapping="Wrap" 
+                   Text="Primary Properties notifying on PropertyChangedInternal with chained Secondary Property notifications" Margin="5,5,5,15" />
+
+        <Grid Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="6">
+            
+        </Grid>
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="7" TextWrapping="Wrap" 
+                   Text="Chaining on Property's Property" Margin="5,5,5,15" />
+
+        <Border Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="8" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+            <ScrollViewer VerticalScrollBarVisibility="Visible">
+                <TextBlock Text="{Binding PropertyChangedOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            </ScrollViewer>
+        </Border>
         
     </Grid>
 </Window>
