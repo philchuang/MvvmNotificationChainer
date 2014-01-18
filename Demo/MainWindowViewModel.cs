@@ -75,10 +75,11 @@ namespace Demo
         {
             get
             {
+                // this chain listens to MainWindowViewModel.PropertyChanged event
                 myChainedNotifications.Create ()
                                       .Register (cn => cn.On (this, () => Example2Int1)
                                                          .On (this, () => Example2Int2)
-                                                         .AndCall ((notifyingName, chainedName) => RaisePropertyChanged (chainedName)))
+                                                         .AndCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty)))
                                       .Finish ();
 
                 return myExample2Int1 + myExample2Int2;
@@ -114,6 +115,7 @@ namespace Demo
         {
             get
             {
+                // this chain listens to MainWindowViewModel.PropertyChangedInternal event (set in CreateChain method)
                 CreateChain ()
                     .Register (cn => cn.On (() => Example3Int1)
                                        .On (() => Example3Int2))
@@ -152,7 +154,7 @@ namespace Demo
                 Example4Randomizer = null;
 
             m_Example4CommandTextIndex = (m_Example4CommandTextIndex + 1) % s_Example4CommandText.Length;
-            RaisePropertyChanged (() => Example4CommandText);
+            RaisePropertyChanged (() => Example4CommandText); // TODO can this be a chain registered in Example4CommandText property?
         }
 
         private RandomIntGenerator myExample4Randomizer;

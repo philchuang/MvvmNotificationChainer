@@ -1,5 +1,5 @@
 MvvmNotificationChainer
-================
+=======================
 
 What is it?
 -----------
@@ -7,82 +7,80 @@ Portable Class Library that simplifies chaining ViewModel property PropertyChang
 
 Why would I want to use it?
 ---------------------------
-Let's say you have a ViewModel property "Sum" which is a calculated property that depends on properties "Int1" and "Int2". Setting values on Int1 and Int2 will raise a PropertyChanged event for themselves, and also for Sum.
+Let's say you have a ViewModel property "Cost" which is a calculated property that depends on properties "Quantity" and "Price". Setting values on Quantity and Price will raise a PropertyChanged event for themselves, and also for Cost.
 
 Traditionally, the ViewModel properties would look like this:
 
-	private int myInt1;
-	public int Int1
+	private int myQuantity;
+	public int Quantity
 	{
-		get { return myInt1; }
+		get { return myQuantity; }
 		set
 		{
-			myInt1 = value;
-			RaisePropertyChanged("Int1");
-			RaisePropertyChanged("Sum");
+			myQuantity = value;
+			RaisePropertyChanged("Quantity");
+			RaisePropertyChanged("Cost");
 		}
 	}
 
-	private int myInt2;
-	public int Int2
+	private decimal myPrice;
+	public decimal Price
 	{
-		get { return myInt2; }
+		get { return myPrice; }
 		set
 		{
-			myInt2 = value;
-			RaisePropertyChanged("Int2");
-			RaisePropertyChanged("Sum");
+			myPrice = value;
+			RaisePropertyChanged("Price");
+			RaisePropertyChanged("Cost");
 		}
 	}
 
-	public int Sum
-	{
-		get { return myInt1 + myInt2; }
-	}
+	public decimal Cost
+	{ get { return Quantity * Price; } }
 
-What bugs me about this approach is that Int1 and Int2 have to know about Sum. In my opinion, that flow of knowledge should be reversed: only Sum should know that it depends on Int1 and Int2.
+What bugs me about this approach is that Quantity and Price have to know about Cost. In my opinion, that flow of knowledge should be reversed: only Cost should know that it depends on Quantity and Price. Indeed, in Cost's getter we can clearly see that it depends on Quantity and Price.
 
-So how can we reverse that knowledge? That's the goal of MvvmNotificationChainer:
+So how can we keep that knowledge grouped together? That's the goal of MvvmNotificationChainer:
 
 	protected readonly ChainedNotificationManager myChainedNotifications = new ChainedNotificationManager();
 
-	private int myInt1;
-	public int Int1
+	private int myQuantity;
+	public int Quantity
 	{
-		get { return myInt1; }
+		get { return myQuantity; }
 		set
 		{
-			myInt1 = value;
-			RaisePropertyChanged("Int1");
+			myQuantity = value;
+			RaisePropertyChanged("Quantity");
 		}
 	}
 	
-	private int myInt2;
-	public int Int2
+	private decimal myPrice;
+	public decimal Price
 	{
-		get { return myInt2; }
+		get { return myPrice; }
 		set
 		{
-			myInt2 = value;
-			RaisePropertyChanged("Int2");
+			myPrice = value;
+			RaisePropertyChanged("Price");
 		}
 	}
 	
-	public int Sum
+	public decimal Cost
 	{
 		get
 		{
 			myChainedNotifications.Create()
-									.Register (cn => cn.On (this, () => Example2Int1)
-														.On (this, () => Example2Int2)
-														.AndCall (RaisePropertyChanged))
-									.Finish ();
+									.Register (cn => cn.On (this, () => Quantity)
+														.On (this, () => Price)
+														.AndCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty))
+														.Finish ());
 			
-			return myInt1 + myInt2;
+			return Quantity + Price;
 		}
 	}
 
-Now, with the help of ChainedNotificationManager, only Sum has to know that it depends on Int1 and Int2.
+Now, with the help of ChainedNotificationManager, only Cost has to know that it depends on Quantity and Price.
 
 Here's the ChainedNotificationManager.Create method:
 
@@ -91,22 +89,50 @@ Here's the ChainedNotificationManager.Create method:
 	/// </summary>
 	/// <param name="chainedPropertyName">Name of the property that depends on other properties</param>
 	/// <returns></returns>
-	public ChainedNotification Create([CallerMemberName] string chainedPropertyName = null)
+	public ChainedNotification Create([CallerMemberName] string dependentPropertyName = null)
 	{
-		chainedPropertyName.ThrowIfNull("chainedPropertyName");
+		dependentPropertyName.ThrowIfNull("dependentPropertyName");
 
 		ChainedNotification cnd;
-		if (!myChainedNotifications.TryGetValue(chainedPropertyName, out cnd))
-			cnd = myChainedNotifications[chainedPropertyName] = new ChainedNotification(chainedPropertyName);
+		if (!myChainedNotifications.TryGetValue(dependentPropertyName, out cnd))
+			cnd = myChainedNotifications[dependentPropertyName] = new ChainedNotification(dependentPropertyName);
 
 		return cnd;
 	}
 
-[CallerMemberName] is used so that there is compile-time property name safety w/o using Expression&lt;Func&lt;T&gt;&gt;, and then you don't have to specify the chainedPropertyName parameter. Unfortunately [CallerMemberName] doesn't seem to be PCL-compatible, so this functionality will have to be implemented on the platform-specific project.
+[CallerMemberName] is used so that there is compile-time property name safety w/o using Expression&lt;Func&lt;T&gt;&gt;, and then you don't have to specify the dependentPropertyName parameter.
 
 Use the ChainedNotification.On&lt;T&gt; methods to supply a lambda Expression to specify which changed properties to watch.
 
 ChainedNotification is smart enough to Register() just once - therefore you can use Expression&lt;Func&lt;T&gt;&gt; to have compile-time property name safety but only pay the performance penalty for the initial call. After Finish() is called, the other methods won't do anything.
+
+ChainedNotification can also go "deep" - for example:
+
+	private User myUser;
+	public User User
+	{
+		get { return myUser; }
+		set
+		{
+			myUser = value;
+			RaisePropertyChanged("User");
+		}
+	}
+
+	public String UserFirstName
+	{
+		get
+		{
+			myChainedNotifications.Create()
+									.Register (cn => cn.On (this, () => User, u => u.FirstName)
+														.AndCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty))
+														.Finish ());
+			
+			return User != null ? User.FirstName : String.Empty;
+		}
+	}
+
+UserFirstName will notify when User or User.FirstName notifies. Currently only depth of 1 is supported, but i'm planning on supporting multiple depths.
 
 ChainedNotification/Manager also implement IDisposable - when disposed, they will unregister event handlers.
 
@@ -116,9 +142,9 @@ Status
 Initial functionality is done and seems to work as expected.
 
 Implemented Features:
-* Performs ProperyChanged for a chained property whenever a watched property changes
+* Performs PropertyChanged for a dependent property whenever a watched property changes
 * Compile-time property name safety for easy refactoring
-* Executes just once per chain, trivial performance hit on initialization
+* Creates & registers just once per chain, trivial performance hit on initialization
 * Bolt-on code: No need to change base classes, or extensively modify existing ViewModels
 
 To Dos:

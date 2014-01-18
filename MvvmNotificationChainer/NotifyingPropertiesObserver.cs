@@ -9,7 +9,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// <summary>
     /// Used internally by ChainedNotification. Observes multiple properties on a single object.
     /// </summary>
-    internal class ChainedNotificationHandler : IDisposable
+    internal class NotifyingPropertiesObserver : IDisposable
     {
         public event PropertyChangedEventHandler NotifyingPropertyChanged = delegate { };
 
@@ -18,7 +18,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         private readonly PropertyChangedEventHandler myDelegate;
         private Action<PropertyChangedEventHandler> myRemoveEventHandlerAction;
 
-        public ChainedNotificationHandler (INotifyPropertyChanged notifyingObject)
+        public NotifyingPropertiesObserver (INotifyPropertyChanged notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
 
@@ -29,7 +29,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myRemoveEventHandlerAction = h => notifyingObject.PropertyChanged -= h;
         }
 
-        public ChainedNotificationHandler (Action<PropertyChangedEventHandler> addEventHandlerAction,
+        public NotifyingPropertiesObserver (Action<PropertyChangedEventHandler> addEventHandlerAction,
                                            Action<PropertyChangedEventHandler> removeEventHandlerAction)
         {
             addEventHandlerAction.ThrowIfNull ("addEventHandlerAction");

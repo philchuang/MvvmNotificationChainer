@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="ChainedNotification.cs" />
     <Compile Include="ChainedNotificationManager.cs" />
-    <Compile Include="ChainedNotificationHandler.cs" />
+    <Compile Include="NotifyingPropertiesObserver.cs" />
     <Compile Include="CompilerServicesAttributes.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
