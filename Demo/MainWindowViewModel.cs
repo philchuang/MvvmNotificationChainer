@@ -79,7 +79,7 @@ namespace Demo
                 myChainedNotifications.Create ()
                                       .Register (cn => cn.On (this, () => Example2Int1)
                                                          .On (this, () => Example2Int2)
-                                                         .AndCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty)))
+                                                         .AndCall (() => RaisePropertyChanged ()))
                                       .Finish ();
 
                 return myExample2Int1 + myExample2Int2;

@@ -22,6 +22,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -29,39 +30,42 @@
         
         <TextBlock Grid.Column="0" Grid.Row="0" Text="Example 1" Margin="10" />
         <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Example1Int1}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding Example1Int2}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBlock Grid.Column="3" Grid.Row="0" Text="=" Margin="10"/>
-        <TextBlock Grid.Column="4" Grid.Row="0" Text="{Binding Example1IntSum}" Margin="10" />
+        <TextBlock Grid.Column="2" Grid.Row="0" Text="+" Margin="10"/>
+        <TextBox Grid.Column="3" Grid.Row="0" Text="{Binding Example1Int2}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBlock Grid.Column="4" Grid.Row="0" Text="=" Margin="10"/>
+        <TextBlock Grid.Column="5" Grid.Row="0" Text="{Binding Example1IntSum}" Margin="10" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" TextWrapping="Wrap" 
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="1" TextWrapping="Wrap" 
                    Text="Primary Properties raising Secondary Property notifications" Margin="5,5,5,15" />
         
         <TextBlock Grid.Column="0" Grid.Row="2" Text="Example 2" Margin="10" />
         <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Example2Int1}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Example2Int2}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBlock Grid.Column="3" Grid.Row="2" Text="=" Margin="10"/>
-        <TextBlock Grid.Column="4" Grid.Row="2" Text="{Binding Example2IntSum}" Margin="10" />
+        <TextBlock Grid.Column="2" Grid.Row="2" Text="+" Margin="10"/>
+        <TextBox Grid.Column="3" Grid.Row="2" Text="{Binding Example2Int2}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBlock Grid.Column="4" Grid.Row="2" Text="=" Margin="10"/>
+        <TextBlock Grid.Column="5" Grid.Row="2" Text="{Binding Example2IntSum}" Margin="10" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="3" TextWrapping="Wrap" 
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="3" TextWrapping="Wrap" 
                    Text="Primary Properties notifying on PropertyChanged with chained Secondary Property notifications" Margin="5,5,5,15" />
 
         <TextBlock Grid.Column="0" Grid.Row="4" Text="Example 3" Margin="10" />
         <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding Example3Int1}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Example3Int2}" Margin="5" HorizontalAlignment="Stretch" />
-        <TextBlock Grid.Column="3" Grid.Row="4" Text="=" Margin="10"/>
-        <TextBlock Grid.Column="4" Grid.Row="4" Text="{Binding Example3IntSum}" Margin="10" />
+        <TextBlock Grid.Column="2" Grid.Row="4" Text="+" Margin="10"/>
+        <TextBox Grid.Column="3" Grid.Row="4" Text="{Binding Example3Int2}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBlock Grid.Column="4" Grid.Row="4" Text="=" Margin="10"/>
+        <TextBlock Grid.Column="5" Grid.Row="4" Text="{Binding Example3IntSum}" Margin="10" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="5" TextWrapping="Wrap" 
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="5" TextWrapping="Wrap" 
                    Text="Primary Properties notifying on PropertyChangedInternal with chained Secondary Property notifications" Margin="5,5,5,15" />
 
-        <Button Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="6" Margin="10,5"
+        <Button Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="6" Margin="10,5"
                 Content="{Binding Example4CommandText}" Command="{Binding Example4Command}" />
-        <TextBlock Grid.Column="4" Grid.Row="6" Text="{Binding Example4Int}" />
+        <TextBlock Grid.Column="5" Grid.Row="6" Text="{Binding Example4Int}" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="7" TextWrapping="Wrap" 
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="7" TextWrapping="Wrap" 
                    Text="Chaining on Property's Property" Margin="5,5,5,15" />
 
-        <Border Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="8" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+        <Border Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="8" BorderBrush="LightGray" BorderThickness="1" Margin="5">
             <ScrollViewer VerticalScrollBarVisibility="Visible">
                 <TextBlock Text="{Binding PropertyChangedOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </ScrollViewer>

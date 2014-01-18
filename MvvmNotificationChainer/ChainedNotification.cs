@@ -312,6 +312,22 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
         /// </summary>
+        /// <param name="onNotifyingPropertyChanged"></param>
+        /// <returns></returns>
+        public ChainedNotification AndCall (Action onNotifyingPropertyChanged)
+        {
+            if (IsFinished) return this;
+
+            onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
+
+            AndCall ((notifyingProperty, dependentProperty) => onNotifyingPropertyChanged ());
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
+        /// </summary>
         /// <param name="onNotifyingPropertyChanged">First String parameter is the notifying property. Second String parameter is the chained property</param>
         /// <returns></returns>
         public ChainedNotification AndCall (Action<String, String> onNotifyingPropertyChanged)

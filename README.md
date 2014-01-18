@@ -87,7 +87,7 @@ Here's the ChainedNotificationManager.Create method:
 	/// <summary>
 	/// Creates a ChainedNotification for the calling property, or returns an existing instance
 	/// </summary>
-	/// <param name="chainedPropertyName">Name of the property that depends on other properties</param>
+	/// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
 	/// <returns></returns>
 	public ChainedNotification Create([CallerMemberName] string dependentPropertyName = null)
 	{
