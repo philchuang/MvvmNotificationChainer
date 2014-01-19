@@ -76,7 +76,7 @@ namespace Demo
             get
             {
                 // this chain listens to MainWindowViewModel.PropertyChanged event
-                myChainedNotifications.Create ()
+                myNotificationChainManager.CreateOrGet ()
                                       .Register (cn => cn.On (this, () => Example2Int1)
                                                          .On (this, () => Example2Int2)
                                                          .AndCall (() => RaisePropertyChanged ()))
@@ -116,7 +116,7 @@ namespace Demo
             get
             {
                 // this chain listens to MainWindowViewModel.PropertyChangedInternal event (set in CreateChain method)
-                CreateChain ()
+                myNotificationChainManager.CreateOrGet ()
                     .Register (cn => cn.On (() => Example3Int1)
                                        .On (() => Example3Int2))
                     .Finish ();
@@ -173,7 +173,7 @@ namespace Demo
             get
             {
                 // notify when Example4Randomizer and Example4Randomizer.Int changes
-                CreateChain ()
+                myNotificationChainManager.CreateOrGet ()
                     .Register (cn => cn.On (() => Example4Randomizer,
                                             rig => rig.Int))
                     .Finish ();

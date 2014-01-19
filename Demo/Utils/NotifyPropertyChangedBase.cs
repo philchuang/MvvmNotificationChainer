@@ -53,21 +53,17 @@ namespace Demo.Utils
         public String PropertyChangedOutput
         { get { return myPropertyChangedOutput.ToString (); } }
 
-        protected readonly ChainedNotificationManager myChainedNotifications = new ChainedNotificationManager ();
+        protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager ();
+
+        protected NotifyPropertyChangedBase ()
+        {
+            myNotificationChainManager.SetDefaultNotifyingObject (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
+            myNotificationChainManager.AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+        }
 
         public virtual void Dispose ()
         {
-            myChainedNotifications.Dispose ();
-        }
-
-        protected ChainedNotification CreateChain ([CallerMemberName] String propertyName = null)
-        {
-            return
-                myChainedNotifications.Get (propertyName)
-                ?? myChainedNotifications
-                       .Create (propertyName)
-                       .AndSetDefaultNotifyingObject (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h)
-                       .AndCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+            myNotificationChainManager.Dispose ();
         }
     }
 }

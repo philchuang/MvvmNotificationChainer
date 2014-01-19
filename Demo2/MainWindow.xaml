@@ -21,6 +21,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -42,36 +43,39 @@
         <TextBlock Grid.Column="1" Grid.Row="0" Text="Qty" Margin="10,5" />
         <TextBox Grid.Column="2" Grid.Row="0" DataContext="{Binding LineItem1}" Text="{Binding Quantity}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="3" Grid.Row="0" Text="Price" Margin="10,5" />
-        <TextBox Grid.Column="4" Grid.Row="0" DataContext="{Binding LineItem1}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="4" Grid.Row="0" DataContext="{Binding LineItem1}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
         <TextBlock Grid.Column="5" Grid.Row="0" Text="Cost" Margin="10,5"/>
-        <TextBlock Grid.Column="6" Grid.Row="0" DataContext="{Binding LineItem1}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" />
+        <TextBlock Grid.Column="6" Grid.Row="0" DataContext="{Binding LineItem1}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
         <Button Grid.Column="7" Grid.Row="0" Content="{Binding LineItem1CommandText}" Command="{Binding LineItem1Command}" />
 
         <TextBlock Grid.Column="0" Grid.Row="1" Text="L1" Margin="10,5" />
         <TextBlock Grid.Column="1" Grid.Row="1" Text="Qty" Margin="10,5" />
         <TextBox Grid.Column="2" Grid.Row="1" DataContext="{Binding LineItem2}" Text="{Binding Quantity}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="3" Grid.Row="1" Text="Price" Margin="10,5" />
-        <TextBox Grid.Column="4" Grid.Row="1" DataContext="{Binding LineItem2}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="4" Grid.Row="1" DataContext="{Binding LineItem2}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
         <TextBlock Grid.Column="5" Grid.Row="1" Text="Cost" Margin="10,5"/>
-        <TextBlock Grid.Column="6" Grid.Row="1" DataContext="{Binding LineItem2}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" />
+        <TextBlock Grid.Column="6" Grid.Row="1" DataContext="{Binding LineItem2}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
         <Button Grid.Column="7" Grid.Row="1" Content="{Binding LineItem2CommandText}" Command="{Binding LineItem2Command}" />
 
         <TextBlock Grid.Column="0" Grid.Row="2" Text="L1" Margin="10,5" />
         <TextBlock Grid.Column="1" Grid.Row="2" Text="Qty" Margin="10,5" />
         <TextBox Grid.Column="2" Grid.Row="2" DataContext="{Binding LineItem3}" Text="{Binding Quantity}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="3" Grid.Row="2" Text="Price" Margin="10,5" />
-        <TextBox Grid.Column="4" Grid.Row="2" DataContext="{Binding LineItem3}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="4" Grid.Row="2" DataContext="{Binding LineItem3}" Text="{Binding Price}" IsEnabled="{Binding Converter={StaticResource NullToFalseConverter}}" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
         <TextBlock Grid.Column="5" Grid.Row="2" Text="Cost" Margin="10,5"/>
-        <TextBlock Grid.Column="6" Grid.Row="2" DataContext="{Binding LineItem3}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" />
+        <TextBlock Grid.Column="6" Grid.Row="2" DataContext="{Binding LineItem3}" Text="{Binding Cost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
         <Button Grid.Column="7" Grid.Row="2" Content="{Binding LineItem3CommandText}" Command="{Binding LineItem3Command}" />
 
         <TextBlock Grid.Column="0" Grid.ColumnSpan="7" Grid.Row="3" Text="Total Cost" Margin="10,5" />
-        <TextBlock Grid.Column="7" Grid.Row="3" Text="{Binding TotalCost, StringFormat=$0.00}" Margin="10,5" />
+        <TextBlock Grid.Column="7" Grid.Row="3" Text="{Binding TotalCost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="7" Grid.Row="4" Text="Num Line Items" Margin="10,5" />
-        <TextBlock Grid.Column="7" Grid.Row="4" Text="{Binding NumLineItems}" Margin="10,5" />
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="7" Grid.Row="4" Text="Total Qty" Margin="10,5" />
+        <TextBlock Grid.Column="7" Grid.Row="4" Text="{Binding TotalQuantity}" Margin="10,5" />
 
-        <Border Grid.Column="0" Grid.ColumnSpan="8" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="7" Grid.Row="5" Text="Num Line Items" Margin="10,5" />
+        <TextBlock Grid.Column="7" Grid.Row="5" Text="{Binding NumLineItems}" Margin="10,5" />
+
+        <Border Grid.Column="0" Grid.ColumnSpan="8" Grid.Row="6" BorderBrush="LightGray" BorderThickness="1" Margin="5">
             <ScrollViewer VerticalScrollBarVisibility="Visible">
                 <TextBlock Text="{Binding PropertyChangedOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </ScrollViewer>

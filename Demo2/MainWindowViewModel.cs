@@ -91,15 +91,33 @@ namespace Demo2
         {
             get
             {
-                CreateChain ()
+                myNotificationChainManager.CreateOrGet ()
                     .Register (cn => cn.On (() => LineItem1, li => li.Cost)
                                        .On (() => LineItem2, li => li.Cost)
-                                       .On (() => LineItem3, li => li.Cost)
+                                       // TODO check that single observer for LineItem3 is created
+                                       .On (() => LineItem3, li => li.Quantity)
+                                       .On (() => LineItem3, li => li.Price)
                                        .Finish ());
 
                 return (LineItem1 != null ? LineItem1.Cost : 0m) +
                        (LineItem2 != null ? LineItem2.Cost : 0m) +
-                       (LineItem3 != null ? LineItem3.Cost : 0m);
+                       (LineItem3 != null ? LineItem3.Quantity * LineItem3.Price : 0m);
+            }
+        }
+
+        public int TotalQuantity
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                    .Register (cn => cn.On (() => LineItem1, li => li.Quantity)
+                                       .On (() => LineItem2, li => li.Quantity)
+                                       .On (() => LineItem3, li => li.Quantity)
+                                       .Finish ());
+
+                return (LineItem1 != null ? LineItem1.Quantity : 0) +
+                       (LineItem2 != null ? LineItem2.Quantity : 0) +
+                       (LineItem3 != null ? LineItem3.Quantity : 0);
             }
         }
 
@@ -107,7 +125,7 @@ namespace Demo2
         {
             get
             {
-                CreateChain ()
+                myNotificationChainManager.CreateOrGet ()
                     .Register (cn => cn.On (() => LineItem1)
                                        .On (() => LineItem2)
                                        .On (() => LineItem3)
@@ -153,7 +171,7 @@ namespace Demo2
         {
             get
             {
-                CreateChain ()
+                myNotificationChainManager.CreateOrGet ()
                     .Register (cn => cn.On (() => Quantity)
                                        .On (() => Price)
                                        .Finish ());

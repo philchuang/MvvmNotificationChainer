@@ -41,8 +41,8 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChainedNotification.cs" />
-    <Compile Include="ChainedNotificationManager.cs" />
+    <Compile Include="NotificationChain.cs" />
+    <Compile Include="NotificationChainManager.cs" />
     <Compile Include="NotifyingPropertiesObserver.cs" />
     <Compile Include="CompilerServicesAttributes.cs" />
     <Compile Include="Extensions.cs" />

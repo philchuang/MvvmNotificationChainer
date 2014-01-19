@@ -1,0 +1,81 @@
+EXAMPLE VIEWMODEL
+-----------------
+
+OrderViewModel
+  LineItem1
+    Quantity
+    Price
+    Cost <- 
+      this.Quantity
+      this.Price
+
+  LineItem2
+    Quantity
+    Price
+    Cost <- 
+      this.Quantity
+      this.Price
+
+  LineItem3
+    Quantity
+    Price
+    Cost <- 
+      this.Quantity
+      this.Price
+
+  TotalCost <- 
+    this.LineItem1
+      this.LineItem1.Cost
+    this.LineItem2
+      this.LineItem2.Cost
+    this.LineItem3
+      this.LineItem3.Quantity
+      this.LineItem3.Price
+
+  NumLineItems <- 
+    this.LineItem1
+    this.LineItem2
+    this.LineItem3
+
+NOTES
+----------------------------
+
+* TotalCost chain
+  * observer for LineItem1
+    * observer for Cost
+  * observer for LineItem2
+    * observer for Cost
+  * observer for LineItem3
+    * observer for Quantity + Price
+
+ChainManagers all the way down?
+
+OrderViewModel creates chain manager for self
+OrderViewModel chain manager creates chain for OrderViewModel.TotalCost
+...
+TotalCost chain linked to OrderViewModel.LineItem3
+TotalCost chain creates chain manager for LineItem3
+LineItem3 chain manager creates chain for TotalCost
+LineItem3-TotalCost chain linked to LineItem3.Quantity
+LineItem3-TotalCost chain linked to LineItem3.Price
+
+USAGE
+----------------------------
+
+ParentObject 1..1 ChainManager 
+ChainManager 1..M Chains
+Dependent Property 1..1 Chain
+Chain 1..M Notifying Properties
+Chain 1..M Observers
+NotifyingPropertiesObserver 1..1 NotifyingObject
+NotifyingPropertiesObserver 1..M NotifyingProperties
+
+ChainManagers manage multiple Dependent Properties for a common parent object
+	ChainManagers create single NotificationChain for each Dependent Property
+
+NotificationChain observes multiple Notifying Properties on multiple objects and calls event handlers when any of those Notifying Properties notify
+  The standard case is that a Notifying Property belongs to the same parent object as the Dependent Property (NotifyingPropertiesObserver)
+  The rarer case is that a Notifying Property is on another Notifying Property
+
+NotifyingPropertiesObserver observes multiple Notifying Properties on a single object
+	
