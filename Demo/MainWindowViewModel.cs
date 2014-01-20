@@ -197,31 +197,34 @@ namespace Demo
             }
         }
 
-        [CommandProperty (commandType: typeof (DelegateCommand<int?>), paramType: typeof(int?))]
-        public ICommand Example5Command
-        { get; private set; }
-
-        [CommandInitializationMethod]
-        private void InitializeExample5Command (DelegateCommand<int?> command)
+        private DelegateCommand<int?> myExample5Command;
+        [CommandProperty (commandType: typeof (DelegateCommand<int?>), paramType: typeof (int?))]
+        public DelegateCommand<int?> Example5Command
         {
-            myNotificationChainManager.CreateOrGet (((Expression<Func<ICommand>>) (() => Example5Command)).GetPropertyName ())
-                                      .Register (cn =>
-                                                 cn.AndClearCalls ()
-                                                   .On (() => Example5Int)
-                                                   .AndCall (command.RaiseCanExecuteChanged)
-                                                   .Finish ());
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Register (cn =>
+                                                     cn.AndClearCalls ()
+                                                       .On (() => Example5Int)
+                                                       .AndCall (myExample5Command.RaiseCanExecuteChanged)
+                                                       .Finish ());
+
+                return myExample5Command;
+            }
+            private set { myExample5Command = value; }
         }
 
         [CommandCanExecuteMethod]
         private bool CanExample5 (int? parameter)
         {
-            return parameter % 2 == 1;
+            return parameter != null && parameter.Value % 2 == 1;
         }
 
         [CommandExecuteMethod]
         private void DoExample5 (int? parameter)
         {
-            Example5Int = parameter.Value + 1;
+            Example5Int = (parameter ?? 1) + 1;
         }
 
         public MainWindowViewModel ()

@@ -14,7 +14,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Fires when an observed property is changed. Can listen to this event directly or call AndCall().
         /// First String parameter is the notifying property. Second String parameter is the dependent property.
-        /// TODO include object sender parameter
+        /// TODO include object sender parameter?
         /// </summary>
         public event Action<String, String> NotifyingPropertyChanged = delegate { };
 
@@ -314,24 +314,6 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return this;
         }
 
-        private static void SetupDeepNotification<T1, T2> (
-            Dictionary<Object, INotificationChainManagerWrapper> mgrMap,
-            T1 notifyingObject,
-            PropertyChangedEventHandler notificationDelegate,
-            Expression<Func<T1,T2>> propGetter)
-            where T1 : class, INotifyPropertyChanged
-        {
-            INotificationChainManagerWrapper mgrw;
-            if (!mgrMap.TryGetValue (notifyingObject, out mgrw))
-            {
-                mgrw = mgrMap[notifyingObject] = new NotificationChainManagerWrapper<T1> (notifyingObject);
-                mgrw.Manager.AddDefaultCall ((notifyingProperty, dependentProperty) => notificationDelegate (notifyingObject, new PropertyChangedEventArgs (notifyingProperty)));
-            }
-
-            mgrw.Manager.CreateOrGet (propGetter.GetPropertyName ());
-            // TODO keep thinking...
-        }
-
         /// <summary>
         /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
         /// </summary>
@@ -378,6 +360,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T2 : class, INotifyPropertyChanged
         {
             if (IsFinished) return this;
+
+            // NOTE this is just an "unrolled" copy & paste modification to On<T1, T2> ()
 
             /* How this works (3 deep)
              * 1) create observer on notifying object, looking for prop1
@@ -476,6 +460,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return this;
         }
 
+        private static void SetupDeepNotification<T1, T2> (
+            Dictionary<Object, INotificationChainManagerWrapper> mgrMap,
+            T1 notifyingObject,
+            PropertyChangedEventHandler notificationDelegate,
+            Expression<Func<T1, T2>> propGetter)
+            where T1 : class, INotifyPropertyChanged
+        {
+            INotificationChainManagerWrapper mgrw;
+            if (!mgrMap.TryGetValue (notifyingObject, out mgrw))
+            {
+                mgrw = mgrMap[notifyingObject] = new NotificationChainManagerWrapper<T1> (notifyingObject);
+                mgrw.Manager.AddDefaultCall ((notifyingProperty, dependentProperty) => notificationDelegate (notifyingObject, new PropertyChangedEventArgs (notifyingProperty)));
+            }
+
+            mgrw.Manager.CreateOrGet (propGetter.GetPropertyName ());
+            // TODO keep thinking...
+        }
+
         /// <summary>
         /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
         /// </summary>
@@ -516,7 +518,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsFinished) return this;
 
-            foreach (Action<String,String> d in NotifyingPropertyChanged.GetInvocationList ())
+            foreach (var d in NotifyingPropertyChanged.GetInvocationList ().Cast<Action<String, String>> ())
                 NotifyingPropertyChanged -= d;
 
             return this;

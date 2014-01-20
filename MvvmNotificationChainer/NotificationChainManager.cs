@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -73,6 +74,18 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
 
             myDefaultCallbacks.Add (onNotifyingPropertyChanged);
+        }
+
+        /// <summary>
+        /// Creates a new NotificationChain for the calling property, or returns an existing instance
+        /// </summary>
+        /// <param name="propGetter">Lambda expression for the property that depends on other properties</param>
+        /// <returns></returns>
+        public NotificationChain CreateOrGet<T> (Expression<Func<T>> propGetter)
+        {
+            propGetter.ThrowIfNull ("propGetter");
+
+            return CreateOrGet (propGetter.GetPropertyName ());
         }
 
         /// <summary>
