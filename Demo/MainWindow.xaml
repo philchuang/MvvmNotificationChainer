@@ -17,6 +17,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -65,7 +67,14 @@
         <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="7" TextWrapping="Wrap" 
                    Text="Chaining on Property's Property" Margin="5,5,5,15" />
 
-        <Border Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="8" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+        <TextBox Grid.Column="0" Grid.Row="8" Text="{Binding Example5Int}" />
+        <Button Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="8" Margin="10,5"
+                Content="+1 to odd number" Command="{Binding Example5Command}" CommandParameter="{Binding Example5Int}" />
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="9" TextWrapping="Wrap" 
+                   Text="Chaining to Command.RaiseCanExecuteChanged" Margin="5,5,5,15" />
+
+        <Border Grid.Column="0" Grid.ColumnSpan="6" Grid.Row="10" BorderBrush="LightGray" BorderThickness="1" Margin="5">
             <ScrollViewer VerticalScrollBarVisibility="Visible">
                 <TextBlock Text="{Binding PropertyChangedOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </ScrollViewer>

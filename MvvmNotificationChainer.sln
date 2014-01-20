@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvvmNotificationChainer", "MvvmNotificationChainer\MvvmNotificationChainer.csproj", "{310522D6-E128-4EB2-83BD-888CBF10CEA6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvvmNotificationChainer.UnitTests", "MvvmNotificationChainer.UnitTests\MvvmNotificationChainer.UnitTests.csproj", "{D4F29CCD-8974-4246-A3EB-D51BE7EB173A}"

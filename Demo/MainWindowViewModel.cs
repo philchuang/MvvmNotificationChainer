@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Com.PhilChuang.Utils;
 using Com.PhilChuang.Utils.MvvmCommandWirer;
 using Demo.Utils;
 using Microsoft.Practices.Prism.Commands;
@@ -180,6 +182,46 @@ namespace Demo
 
                 return Example4Randomizer != null ? Example4Randomizer.Int : -1;
             }
+        }
+
+        // ----- command chaining ------------------------------------------
+
+        private int myExample5Int;
+        public int Example5Int
+        {
+            get { return myExample5Int; }
+            set
+            {
+                myExample5Int = value;
+                RaisePropertyChanged (() => Example5Int);
+            }
+        }
+
+        [CommandProperty (commandType: typeof (DelegateCommand<int?>), paramType: typeof(int?))]
+        public ICommand Example5Command
+        { get; private set; }
+
+        [CommandInitializationMethod]
+        private void InitializeExample5Command (DelegateCommand<int?> command)
+        {
+            myNotificationChainManager.CreateOrGet (((Expression<Func<ICommand>>) (() => Example5Command)).GetPropertyName ())
+                                      .Register (cn =>
+                                                 cn.AndClearCalls ()
+                                                   .On (() => Example5Int)
+                                                   .AndCall (command.RaiseCanExecuteChanged)
+                                                   .Finish ());
+        }
+
+        [CommandCanExecuteMethod]
+        private bool CanExample5 (int? parameter)
+        {
+            return parameter % 2 == 1;
+        }
+
+        [CommandExecuteMethod]
+        private void DoExample5 (int? parameter)
+        {
+            Example5Int = parameter.Value + 1;
         }
 
         public MainWindowViewModel ()

@@ -509,6 +509,20 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
+        /// Removes all callbacks
+        /// </summary>
+        /// <returns></returns>
+        public NotificationChain AndClearCalls ()
+        {
+            if (IsFinished) return this;
+
+            foreach (Action<String,String> d in NotifyingPropertyChanged.GetInvocationList ())
+                NotifyingPropertyChanged -= d;
+
+            return this;
+        }
+
+        /// <summary>
         /// Indicates that the ChainedNotification has been fully defined and prevents further modification/registration.
         /// </summary>
         public void Finish ()
