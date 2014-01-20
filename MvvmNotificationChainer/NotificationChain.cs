@@ -14,6 +14,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Fires when an observed property is changed. Can listen to this event directly or call AndCall().
         /// First String parameter is the notifying property. Second String parameter is the dependent property.
+        /// TODO include object sender parameter
         /// </summary>
         public event Action<String, String> NotifyingPropertyChanged = delegate { };
 
@@ -254,9 +255,6 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsFinished) return this;
 
-            // TODO think about how to make this go a few levels deeper!
-            // recursion is key here - may have to refactor...
-
             /* How this works (2 deep)
              * 1) create observer on notifying object, looking for prop1
              * 2) when prop1 notifies
@@ -265,6 +263,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
              * 2.3) if prop1 is null and has not been observed, do nothing
              * 2.4) if prop1 is null and has already been observed, dispose the prop1-prop2 observer
              */
+
+            // TODO think about how to make this go a few levels deeper!
+            // recursion is key here - may have to refactor...
+            // NotifyingPropertyChanged lambda needs to be a method
+            // parent method needs access to child manager/wrapper in order to dispose
+            // parameters: parent notification action, property getter, subproperty getter
 
             // chain Parent.Property to this.DependentPropertyName
             // have to create a separate observer despite having same parent notifying object because each one will behave differently
@@ -308,6 +312,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 };
 
             return this;
+        }
+
+        private static void SetupDeepNotification<T1, T2> (
+            Dictionary<Object, INotificationChainManagerWrapper> mgrMap,
+            T1 notifyingObject,
+            PropertyChangedEventHandler notificationDelegate,
+            Expression<Func<T1,T2>> propGetter)
+            where T1 : class, INotifyPropertyChanged
+        {
+            INotificationChainManagerWrapper mgrw;
+            if (!mgrMap.TryGetValue (notifyingObject, out mgrw))
+            {
+                mgrw = mgrMap[notifyingObject] = new NotificationChainManagerWrapper<T1> (notifyingObject);
+                mgrw.Manager.AddDefaultCall ((notifyingProperty, dependentProperty) => notificationDelegate (notifyingObject, new PropertyChangedEventArgs (notifyingProperty)));
+            }
+
+            mgrw.Manager.CreateOrGet (propGetter.GetPropertyName ());
+            // TODO keep thinking...
         }
 
         /// <summary>
@@ -370,6 +392,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
              * 2.3) if prop1 is null and has not been observed, do nothing
              * 2.4) if prop1 is null and has already been observed, dispose the prop2-prop3 observer, dispose the prop1-prop2 observer
              */
+
+            // TODO use NotificationChainManagerWrapper to enable recursion
 
             // chain Parent.Property to this.DependentPropertyName
             // have to create a separate observer despite having same parent notifying object because each one will behave differently

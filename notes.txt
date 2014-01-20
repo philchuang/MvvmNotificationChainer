@@ -58,6 +58,61 @@ TotalCost chain creates chain manager for LineItem3
 LineItem3 chain manager creates chain for TotalCost
 LineItem3-TotalCost chain linked to LineItem3.Quantity
 LineItem3-TotalCost chain linked to LineItem3.Price
+...
+
+OrderHistoryViewModel.Order1.LineItem1.Quantity * OrderHistoryViewModel.Order1.LineItem1.Price -> OrderHistoryViewModel.TotalSpent
+
+OrderHistoryViewModel.myNotificationChainManager observes OrderHistoryViewModel
+	-and notifies on Order1 for OrderHistoryViewModel.TotalSpent
+	-also when Order1 notifies 
+		-and goes from null to non-null
+			-NotificationChainManager created (on/where ???) and observes Order1
+			-and notifies on LineItem1 for OrderHistoryViewModel.TotalSpent
+			-also when LineItem1 notifies
+				-and goes from null to non-null
+					-NotificationChainManager created (on/where ???) and observes LineItem1
+					-and notifies on Quantity for OrderHistoryViewModel.TotalSpent
+					-and notifies on Price for OrderHistoryViewModel.TotalSpent
+				-and goes from non-null to null
+					-NotificationChainManager observing LineItem1 is disposed
+			-and notifies on LineItem2 for OrderHistoryViewModel.TotalSpent
+			-also when LineItem2 notifies
+				-and goes from null to non-null
+					-NotificationChainManager created (on/where ???) and observes LineItem2
+					-and notifies on Quantity for OrderHistoryViewModel.TotalSpent
+					-and notifies on Price for OrderHistoryViewModel.TotalSpent
+				-and goes from non-null to null
+					-NotificationChainManager observing LineItem2 is disposed
+		-and goes from non-null to null
+			-NotificationChainManager observing LineItem1 is disposed (if exists)
+			-NotificationChainManager observing LineItem2 is disposed (if exists)
+			-NotificationChainManager observing Order1 is disposed
+	-and notifies on Order2 for OrderHistoryViewModel.TotalSpent
+	-also when Order2 notifies 
+		-and goes from null to non-null
+			-NotificationChainManager created (on/where ???) and observes Order2
+			-and notifies on LineItem1 for OrderHistoryViewModel.TotalSpent
+			-also when LineItem1 notifies
+				-and goes from null to non-null
+					-NotificationChainManager created (on/where ???) and observes LineItem1
+					-and notifies on Quantity for OrderHistoryViewModel.TotalSpent
+					-and notifies on Price for OrderHistoryViewModel.TotalSpent
+				-and goes from non-null to null
+					-NotificationChainManager observing LineItem1 is disposed
+			-and notifies on LineItem2 for OrderHistoryViewModel.TotalSpent
+			-also when LineItem2 notifies
+				-and goes from null to non-null
+					-NotificationChainManager created (on/where ???) and observes LineItem2
+					-and notifies on Quantity for OrderHistoryViewModel.TotalSpent
+					-and notifies on Price for OrderHistoryViewModel.TotalSpent
+				-and goes from non-null to null
+					-NotificationChainManager observing LineItem2 is disposed
+		-and goes from non-null to null
+			-NotificationChainManager observing LineItem1 is disposed (if exists)
+			-NotificationChainManager observing LineItem2 is disposed (if exists)
+			-NotificationChainManager observing Order2 is disposed
+
+
 
 USAGE
 ----------------------------
