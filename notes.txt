@@ -111,7 +111,21 @@ OrderHistoryViewModel.myNotificationChainManager observes OrderHistoryViewModel
 			-NotificationChainManager observing LineItem1 is disposed (if exists)
 			-NotificationChainManager observing LineItem2 is disposed (if exists)
 			-NotificationChainManager observing Order2 is disposed
+...
 
+another attempt at an algorithm:
+
+On<T1,T2,T3,T4> (Expression<Func<T1>> prop1Getter, Expression<Func<T1,T2>> prop2Getter, Expression<Func<T2,T3>> prop3Getter, Expression<Func<T3,T4>> prop4Getter)
+where T1-T4 are all INotifyPropertyChanged
+
+observe T0 for T1 - notifyingObject, prop1Getter, raiseDelegate
+observe T1 for T2 - prop2Getter, raiseDelegate, observeDelegate
+observe T2 for T3 - prop3Getter, raiseDelegate, observeDelegate
+observe T3 for T4 - prop4Getter, raiseDelegate
+
+thinking... what if multiple props are being watched at T1? probably can't use a manager because each will behave differently the next level down
+
+...
 
 
 USAGE
