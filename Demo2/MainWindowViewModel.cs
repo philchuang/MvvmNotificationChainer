@@ -13,8 +13,6 @@ namespace Demo2
 {
     public class MainWindowViewModel : NotifyPropertyChangedBase
     {
-        // TODO chain LineItemNCommandText to ExecuteLineItemN? Perhaps DelegateCommand.IsActiveChanged can trigger
-
         private LineItem myLineItem1;
         public LineItem LineItem1
         {
@@ -27,7 +25,15 @@ namespace Demo2
         }
 
         public String LineItem1CommandText
-        { get { return myLineItem1 == null ? "+" : "x"; } }
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Register (cn => cn.On (() => LineItem1).Finish ());
+
+                return myLineItem1 == null ? "+" : "x";
+            }
+        }
 
         [CommandProperty (commandType: typeof (DelegateCommand))]
         public ICommand LineItem1Command { get; set; }
@@ -36,7 +42,6 @@ namespace Demo2
         private void ExecuteLineItem1 ()
         {
             LineItem1 = LineItem1 == null ? new LineItem () : null;
-            RaisePropertyChanged (() => LineItem1CommandText);
         }
 
         private LineItem myLineItem2;
@@ -51,7 +56,15 @@ namespace Demo2
         }
 
         public String LineItem2CommandText
-        { get { return myLineItem2 == null ? "+" : "x"; } }
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Register (cn => cn.On (() => LineItem2).Finish ());
+
+                return myLineItem2 == null ? "+" : "x";
+            }
+        }
 
         [CommandProperty (commandType: typeof (DelegateCommand))]
         public ICommand LineItem2Command { get; set; }
@@ -60,7 +73,6 @@ namespace Demo2
         private void ExecuteLineItem2 ()
         {
             LineItem2 = LineItem2 == null ? new LineItem () : null;
-            RaisePropertyChanged (() => LineItem2CommandText);
         }
 
         private LineItem myLineItem3;
@@ -75,7 +87,15 @@ namespace Demo2
         }
 
         public String LineItem3CommandText
-        { get { return myLineItem3 == null ? "+" : "x"; } }
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Register (cn => cn.On (() => LineItem3).Finish ());
+
+                return myLineItem3 == null ? "+" : "x";
+            }
+        }
 
         [CommandProperty (commandType: typeof (DelegateCommand))]
         public ICommand LineItem3Command { get; set; }
@@ -84,7 +104,6 @@ namespace Demo2
         private void ExecuteLineItem3 ()
         {
             LineItem3 = LineItem3 == null ? new LineItem () : null;
-            RaisePropertyChanged (() => LineItem3CommandText);
         }
 
         public decimal TotalCost
@@ -92,12 +111,12 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => LineItem1, li => li.Cost)
-                                       .On (() => LineItem2, li => li.Cost)
-                                       // TODO check that single observer for LineItem3 is created
-                                       .On (() => LineItem3, li => li.Quantity)
-                                       .On (() => LineItem3, li => li.Price)
-                                       .Finish ());
+                                          .Register (cn => cn.On (() => LineItem1, li => li.Cost)
+                                                             .On (() => LineItem2, li => li.Cost)
+                                                               // doing multiple LineItem3 properties just to show that it can be done
+                                                             .On (() => LineItem3, li => li.Quantity)
+                                                             .On (() => LineItem3, li => li.Price)
+                                                             .Finish ());
 
                 return (LineItem1 != null ? LineItem1.Cost : 0m) +
                        (LineItem2 != null ? LineItem2.Cost : 0m) +
@@ -110,10 +129,10 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => LineItem1, li => li.Quantity)
-                                       .On (() => LineItem2, li => li.Quantity)
-                                       .On (() => LineItem3, li => li.Quantity)
-                                       .Finish ());
+                                          .Register (cn => cn.On (() => LineItem1, li => li.Quantity)
+                                                             .On (() => LineItem2, li => li.Quantity)
+                                                             .On (() => LineItem3, li => li.Quantity)
+                                                             .Finish ());
 
                 return (LineItem1 != null ? LineItem1.Quantity : 0) +
                        (LineItem2 != null ? LineItem2.Quantity : 0) +
@@ -126,10 +145,10 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => LineItem1)
-                                       .On (() => LineItem2)
-                                       .On (() => LineItem3)
-                                       .Finish ());
+                                          .Register (cn => cn.On (() => LineItem1)
+                                                             .On (() => LineItem2)
+                                                             .On (() => LineItem3)
+                                                             .Finish ());
 
                 return (LineItem1 != null ? 1 : 0) +
                        (LineItem2 != null ? 1 : 0) +
@@ -172,9 +191,9 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => Quantity)
-                                       .On (() => Price)
-                                       .Finish ());
+                                          .Register (cn => cn.On (() => Quantity)
+                                                             .On (() => Price)
+                                                             .Finish ());
 
                 return myQuantity * myPrice;
             }

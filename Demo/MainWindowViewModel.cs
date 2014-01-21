@@ -79,10 +79,10 @@ namespace Demo
             {
                 // this chain listens to MainWindowViewModel.PropertyChanged event
                 myNotificationChainManager.CreateOrGet ()
-                                      .Register (cn => cn.On (this, () => Example2Int1)
-                                                         .On (this, () => Example2Int2)
-                                                         .AndCall (() => RaisePropertyChanged ()))
-                                      .Finish ();
+                                          .Register (cn => cn.On (this, () => Example2Int1)
+                                                             .On (this, () => Example2Int2)
+                                                             .AndCall (() => RaisePropertyChanged ()))
+                                          .Finish ();
 
                 return myExample2Int1 + myExample2Int2;
             }
@@ -117,11 +117,11 @@ namespace Demo
         {
             get
             {
-                // this chain listens to MainWindowViewModel.PropertyChangedInternal event (set in CreateChain method)
+                // this chain listens to MainWindowViewModel.PropertyChangedInternal event (set in NotifyPropertyChangedBase constructor)
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => Example3Int1)
-                                       .On (() => Example3Int2))
-                    .Finish ();
+                                          .Register (cn => cn.On (() => Example3Int1)
+                                                             .On (() => Example3Int2))
+                                          .Finish ();
 
                 return myExample3Int1 + myExample3Int2;
             }
@@ -130,17 +130,34 @@ namespace Demo
         // ----- sub-property chaining ------------------------------------------
         // ----- demonstrates chaining on a Property's Property
 
-        private static readonly String[] s_Example4CommandText = new[]
-                                                                 {
-                                                                     "Create Randomizer",
-                                                                     "Randomize()",
-                                                                     "Clear Randomizer",
-                                                                 };
+        private static readonly String[] s_Example4CommandText =
+        {
+            "Create Randomizer",
+            "Randomize()",
+            "Clear Randomizer",
+        };
 
-        private int m_Example4CommandTextIndex = 0;
+        private int myExample4CommandTextIndex = 0;
+        private int Example4CommandTextIndex
+        {
+            get { return myExample4CommandTextIndex; }
+            set
+            {
+                myExample4CommandTextIndex = value;
+                RaisePropertyChangedInternal ();
+            }
+        }
 
         public String Example4CommandText
-        { get { return s_Example4CommandText[m_Example4CommandTextIndex]; } }
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Register (cn => cn.On (() => Example4CommandTextIndex).Finish ());
+
+                return s_Example4CommandText[Example4CommandTextIndex];
+            }
+        }
 
         [CommandProperty (commandType: typeof (DelegateCommand))]
         public ICommand Example4Command { get; set; }
@@ -148,15 +165,14 @@ namespace Demo
         [CommandExecuteMethod]
         private void ExecuteExample4 ()
         {
-            if (m_Example4CommandTextIndex == 0)
+            if (myExample4CommandTextIndex == 0)
                 Example4Randomizer = new RandomIntGenerator ();
-            else if (m_Example4CommandTextIndex == 1)
+            else if (myExample4CommandTextIndex == 1)
                 Example4Randomizer.Randomize ();
-            else if (m_Example4CommandTextIndex == 2)
+            else if (myExample4CommandTextIndex == 2)
                 Example4Randomizer = null;
 
-            m_Example4CommandTextIndex = (m_Example4CommandTextIndex + 1) % s_Example4CommandText.Length;
-            RaisePropertyChanged (() => Example4CommandText); // TODO can this be a chain registered in Example4CommandText property?
+            Example4CommandTextIndex = (Example4CommandTextIndex + 1) % s_Example4CommandText.Length;
         }
 
         private RandomIntGenerator myExample4Randomizer;
@@ -176,9 +192,9 @@ namespace Demo
             {
                 // notify when Example4Randomizer and Example4Randomizer.Int changes
                 myNotificationChainManager.CreateOrGet ()
-                    .Register (cn => cn.On (() => Example4Randomizer,
-                                            rig => rig.Int))
-                    .Finish ();
+                                          .Register (cn => cn.On (() => Example4Randomizer,
+                                                                  rig => rig.Int)
+                                                             .Finish ());
 
                 return Example4Randomizer != null ? Example4Randomizer.Int : -1;
             }
@@ -193,31 +209,24 @@ namespace Demo
             set
             {
                 myExample5Int = value;
-                RaisePropertyChanged (() => Example5Int);
+                RaisePropertyChanged ();
             }
         }
 
-        private DelegateCommand<int?> myExample5Command;
         [CommandProperty (commandType: typeof (DelegateCommand<int?>), paramType: typeof (int?))]
         public DelegateCommand<int?> Example5Command
-        {
-            get
-            {
-                myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn =>
-                                                     cn.AndClearCalls ()
-                                                       .On (() => Example5Int)
-                                                       .AndCall (myExample5Command.RaiseCanExecuteChanged)
-                                                       .Finish ());
-
-                return myExample5Command;
-            }
-            private set { myExample5Command = value; }
-        }
+        { get; private set; }
 
         [CommandCanExecuteMethod]
         private bool CanExample5 (int? parameter)
         {
+            myNotificationChainManager.CreateOrGet (() => Example5Command)
+                                      .Register (cn =>
+                                                 cn.AndClearCalls ()
+                                                   .On (() => Example5Int)
+                                                   .AndCall (Example5Command.RaiseCanExecuteChanged)
+                                                   .Finish ());
+
             return parameter != null && parameter.Value % 2 == 1;
         }
 

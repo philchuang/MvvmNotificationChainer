@@ -1,0 +1,5 @@
+* xmldoc
+* unit tests
+* keep trying to figure out how to make parts of On<T1,T2,etc> a method
+	* method for creation of NotifyingPropertyChanged delegate
+		* which takes List<IDisposable> childDisposables and childNotifyingPropertyChanged delegate?

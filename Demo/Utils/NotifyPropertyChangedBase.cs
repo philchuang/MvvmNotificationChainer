@@ -34,6 +34,16 @@ namespace Demo.Utils
                 var handler = PropertyChanged;
                 handler (this, args);
             }
+            RaisePropertyChangedInternal (args);
+        }
+
+        protected virtual void RaisePropertyChangedInternal ([CallerMemberName] string propertyName = null)
+        {
+            RaisePropertyChangedInternal (new PropertyChangedEventArgs (propertyName));
+        }
+
+        protected virtual void RaisePropertyChangedInternal (PropertyChangedEventArgs args)
+        {
             if (PropertyChangedInternal != null)
             {
                 if (args.PropertyName != "PropertyChangedOutput")
