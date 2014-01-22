@@ -43,7 +43,7 @@ public decimal Cost
 
 What bugs me about this approach is that *Quantity* and *Price* have to know about *Cost*. In my opinion, that flow of knowledge should be reversed: only *Cost* should know that it depends on *Quantity* and *Price*. Indeed, in *Cost*'s getter we can clearly see that it depends on *Quantity* and *Price*.
 
-This is related to the software engineering principles of [Cohesion](http://en.wikipedia.org/wiki/Cohesion_(computer_science)) (refers to the degree to which the elements of a module belong together) and [Coupling](http://en.wikipedia.org/wiki/Coupling_(computer_science)) (specifically, reducing Content Coupling, when one module modifies or relies on the internal workings of another module).
+This is related to the software engineering principles of [Cohesion](http://en.wikipedia.org/wiki/Cohesion_%28computer_science%29) (refers to the degree to which the elements of a module belong together) and [Coupling](http://en.wikipedia.org/wiki/Coupling_%28computer_science%29) (specifically, reducing Content Coupling, when one module modifies or relies on the internal workings of another module).
 
 So how can we keep that knowledge grouped properly? That's the goal of MvvmNotificationChainer:
 
@@ -77,9 +77,9 @@ public decimal Cost
 	get
 	{
 		myNotificationChainManager.CreateOrGet()
-									.Register (cn => cn.On (() => Quantity)
-														.On (() => Price)
-														.Finish ());
+		                          .Register (cn => cn.On (() => Quantity)
+		                                             .On (() => Price)
+		                                             .Finish ());
 		
 		return Quantity + Price;
 	}
@@ -137,9 +137,9 @@ public String UserFirstName
 {
 	get
 	{
-		myChainedNotifications.Create()
-								.Register (cn => cn.On (() => User, u => u.FirstName)
-													.Finish ());
+		myNotificationChainManager.CreateOrGet()
+		                          .Register (cn => cn.On (() => User, u => u.FirstName)
+		                                             .Finish ());
 		
 		return User != null ? User.FirstName : String.Empty;
 	}
@@ -172,11 +172,11 @@ public DelegateCommand DoSomethingCommand
 
 private bool CanDoSomething ()
 {
-    myNotificationChainManager.CreateOrGet (() => DoSomethingCommand)
-                              .Register (cn => cn.On (() => HasInternetConnection)
-                                                 .AndClearCalls ()
-                                                 .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
-                                                 .Finish ());
+	myNotificationChainManager.CreateOrGet (() => DoSomethingCommand)
+	                          .Register (cn => cn.On (() => HasInternetConnection)
+	                                             .AndClearCalls ()
+	                                             .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
+	                                             .Finish ());
 
     return HasInternetConnection;
 }
