@@ -81,7 +81,7 @@ public decimal Cost
 		                                             .On (() => Price)
 		                                             .Finish ());
 		
-		return Quantity + Price;
+		return Quantity * Price;
 	}
 }
 ```
