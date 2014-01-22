@@ -7,6 +7,8 @@ Portable Class Library that simplifies chaining ViewModel property PropertyChang
 
 Why would I want to use it?
 ---------------------------
+A common occurrence in MVVM development is having calculated properties on your ViewModel. Calculated properties are often put on the ViewModel in order to avoid putting that logic in the UI code, as well as provide convenient databinding.
+
 For example, let's say you have a ViewModel property *Cost* which is a calculated property that depends on properties *Quantity* and *Price*. Setting values on *Quantity* and *Price* will raise a `PropertyChanged` event for themselves, and also for *Cost*.
 
 Traditionally, the ViewModel properties would look like this:
@@ -40,11 +42,17 @@ public decimal Cost
 { get { return Quantity * Price; } }
 ```
 
+The Problem
+-----------
+
 What bugs me about this approach is that *Quantity* and *Price* have to know about *Cost* (Quantity/Price -&gt; Cost). In my opinion, that flow of knowledge should be reversed: only *Cost* should know that it depends on *Quantity* and *Price* (Cost -&gt; Quantity/Price). Indeed, in *Cost*'s getter we can clearly see that calculation already knows about *Quantity* and *Price*. So putting the notification logic in the same place results in no additional conceptual knowledge.
 
 This follows the software engineering principles of increasing [Cohesion](http://en.wikipedia.org/wiki/Cohesion_%28computer_science%29) (the degree to which the elements of a module belong together) and decreasing [Coupling](http://en.wikipedia.org/wiki/Coupling_%28computer_science%29) (specifically, Content Coupling, when one module modifies or relies on the internal workings of another module).
 
-So how can we keep that knowledge grouped properly? Using MvvmNotificationChainer, it can be rewritten like this:
+A Solution
+----------
+
+So how can we keep that knowledge grouped properly? Using **MvvmNotificationChainer**, it can be rewritten like this:
 
 ```C#
 private int myQuantity;
