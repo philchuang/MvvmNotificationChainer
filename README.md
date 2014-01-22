@@ -73,10 +73,10 @@ public decimal Cost
 {
 	get
 	{
-	myNotificationChainManager.CreateOrGet()
-	                          .Register (cn => cn.On (() => Quantity)
-	                                             .On (() => Price)
-	                                             .Finish ());
+		myNotificationChainManager.CreateOrGet()
+		                          .Register (cn => cn.On (() => Quantity)
+		                                             .On (() => Price)
+		                                             .Finish ());
 		
 		return Quantity * Price;
 	}
@@ -126,6 +126,9 @@ The `NotificationChain.On` methods to supply a lambda Expression to specify whic
 
 Each chain is smart enough to call `Register()` just once - therefore you can use `Expression<Func<T>>`; to have compile-time property name safety but only pay the performance penalty for the initial call. After `Finish()` is called, the other methods won't do anything.
 
+Usage
+-----
+
 Now let's analyze the method calls line by line:
 
 ```C#
@@ -170,6 +173,9 @@ Tells the chain to watch for *Price* to change
 
 Tells the chain that it is done being configured, and not to allow any further configuration changes.
 
+Deep Observation
+----------------
+
 `NotificationChain` can also observe "deep" - for example:
 
 ```C#
@@ -198,6 +204,9 @@ public String UserFirstName
 ```
 
 UserFirstName will notify when User or User.FirstName notifies. Currently depth of 4 is supported, but i'm working on refactoring to support more depths.
+
+Integrate with MVVM ICommands
+-----------------------------
 
 `NotificationChain` can also be used to support Commands - for instance, calling Prism's `DelegateCommand.RaiseCanExecuteChanged` when a watched property changes
 
@@ -242,7 +251,10 @@ private void DoSomething ()
 
 We can eliminate Content Coupling by keeping knowledge of DoSomethingCommand away from HasInternetConnection and making DoSomethingCommand code contain the relationship to HasInternetConnection (which it already does).
 
-So with **MvvmNotificationChainer**, you can reduce coupling by keeping the flow of knowledge one way - from dependent to source properties - for both properties, and ICommand.CanExecute methods.
+Summary
+-------
+
+So with **MvvmNotificationChainer**, you can reduce coupling by keeping the flow of knowledge one way - from dependent to source properties - for both Properties and Commands.
 
 Status
 ------
@@ -266,10 +278,10 @@ Caveats:
 
 * You can probably use Reactive Extensions to solve this problem, but I still can't grok it yet. `MvvmNotificationChainer` just seems a lot more straightforward, and doesn't require extensive rewriting of existing ViewModels.
 
-Shout-outs
-----------
+Acknowledgements
+----------------
 
-Thanks to [Interknowlogy's PDFx](http://blogs.interknowlogy.com/2013/05/17/pdfx-property-dependency-framework-part-i-introduction-2/) for the inspiration!
+Thanks to [Interknowlogy's PDFx](http://blogs.interknowlogy.com/2013/05/17/pdfx-property-dependency-framework-part-i-introduction-2/) for the inspiration! I might've gone with their library but it looked like I would've needed to rewrite my classes to implement another interface/base class.
 
 License
 -------
