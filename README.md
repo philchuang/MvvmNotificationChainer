@@ -7,8 +7,7 @@ Portable Class Library that simplifies chaining ViewModel property PropertyChang
 
 Why would I want to use it?
 ---------------------------
-Let's say you have a ViewModel property *Cost* which is a calculated property that depends on properties *Quantity* and *Price*. Setting values on 
-*Quantity* and *Price* will raise a `PropertyChanged` event for themselves, and also for *Cost*.
+For example, let's say you have a ViewModel property *Cost* which is a calculated property that depends on properties *Quantity* and *Price*. Setting values on *Quantity* and *Price* will raise a `PropertyChanged` event for themselves, and also for *Cost*.
 
 Traditionally, the ViewModel properties would look like this:
 
@@ -41,15 +40,13 @@ public decimal Cost
 { get { return Quantity * Price; } }
 ```
 
-What bugs me about this approach is that *Quantity* and *Price* have to know about *Cost*. In my opinion, that flow of knowledge should be reversed: only *Cost* should know that it depends on *Quantity* and *Price*. Indeed, in *Cost*'s getter we can clearly see that it depends on *Quantity* and *Price*.
+What bugs me about this approach is that *Quantity* and *Price* have to know about *Cost* (Quantity/Price -&gt; Cost). In my opinion, that flow of knowledge should be reversed: only *Cost* should know that it depends on *Quantity* and *Price* (Cost -&gt; Quantity/Price). Indeed, in *Cost*'s getter we can clearly see that calculation already knows about *Quantity* and *Price*. So putting the notification logic in the same place results in no additional conceptual knowledge.
 
-This is related to the software engineering principles of [Cohesion](http://en.wikipedia.org/wiki/Cohesion_%28computer_science%29) (refers to the degree to which the elements of a module belong together) and [Coupling](http://en.wikipedia.org/wiki/Coupling_%28computer_science%29) (specifically, reducing Content Coupling, when one module modifies or relies on the internal workings of another module).
+This follows the software engineering principles of increasing [Cohesion](http://en.wikipedia.org/wiki/Cohesion_%28computer_science%29) (the degree to which the elements of a module belong together) and decreasing [Coupling](http://en.wikipedia.org/wiki/Coupling_%28computer_science%29) (specifically, Content Coupling, when one module modifies or relies on the internal workings of another module).
 
-So how can we keep that knowledge grouped properly? That's the goal of MvvmNotificationChainer:
+So how can we keep that knowledge grouped properly? Using MvvmNotificationChainer, it can be rewritten like this:
 
 ```C#
-protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager();
-
 private int myQuantity;
 public int Quantity
 {
@@ -76,17 +73,25 @@ public decimal Cost
 {
 	get
 	{
-		myNotificationChainManager.CreateOrGet()
-		                          .Register (cn => cn.On (() => Quantity)
-		                                             .On (() => Price)
-		                                             .Finish ());
+	myNotificationChainManager.CreateOrGet()
+	                          .Register (cn => cn.On (() => Quantity)
+	                                             .On (() => Price)
+	                                             .Finish ());
 		
 		return Quantity * Price;
 	}
 }
+
+protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager();
+
+public MyViewModel ()
+{
+	myNotificationChainManager.SetDefaultNotifyingObject (this);
+	myNotificationChainManager.AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+}
 ```
 
-Now, with the help of `NotificationChainManager`, only *Cost* has to know that it depends on *Quantity* and *Price*.
+Now, by using the **MvvmNotificationChainer** library, only *Cost* knows that it depends on *Quantity* and *Price*. *Quantity* and *Price* are completely independent and unaware of *Cost*.
 
 Here's the `NotificationChainManager.CreateOrGet()` method:
 
@@ -113,13 +118,59 @@ public NotificationChain CreateOrGet ([CallerMemberName] string dependentPropert
 }
 ```
 
+The manager helps to provide, consolidate, and configure multiple `NotificationChain`s for a parent object. Note that this doesn't have to be a ViewModel, it's really for any class that implements or depends on `INotifyPropertyChanged`.
+
 `[CallerMemberName]` is used so that there is compile-time property name safety w/o using `Expression<Func<T>>`, and then you don't have to specify the dependentPropertyName parameter.
 
-Use the `NotificationChain.On` methods to supply a lambda Expression to specify which changed properties to watch.
+The `NotificationChain.On` methods to supply a lambda Expression to specify which changed properties to watch.
 
-`NotificationChain` is smart enough to call `Register()` just once - therefore you can use `Expression<Func<T>>`; to have compile-time property name safety but only pay the performance penalty for the initial call. After `Finish()` is called, the other methods won't do anything.
+Each chain is smart enough to call `Register()` just once - therefore you can use `Expression<Func<T>>`; to have compile-time property name safety but only pay the performance penalty for the initial call. After `Finish()` is called, the other methods won't do anything.
 
-`NotificationChain` can also go "deep" - for example:
+Now let's analyze the method calls line by line:
+
+```C#
+/*NotificationChainManager*/ .SetDefaultNotifyingObject (this);
+```
+
+When a new chain is created, it will be configured to listen to the current class (that implements `INotifyPropertyChanged`)
+
+```C#
+/*NotificationChainManager*/ .AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+```
+
+Also when a new chain is created, and when a watched property changes, have it call the current class' RaisePropertyChanged event.
+
+```C#
+/*NotificationChainManager*/ .CreateOrGet()
+```
+
+Creates or gets an existing chain for the calling dependent property
+
+```C#
+/*NotificationChain*/ .Register (cn => cn // ...
+```
+
+Configures the chain with the given `Action<NotificationChain>`, which executes unless `Finish()` has been called.
+
+```C#
+/*NotificationChain*/ .On (() => Quantity)
+```
+
+Tells the chain to watch for *Quantity* to change
+
+```C#
+/*NotificationChain*/ .On (() => Price)
+```
+
+Tells the chain to watch for *Price* to change
+
+```C#
+/*NotificationChain*/ .Finish ()
+````
+
+Tells the chain that it is done being configured, and not to allow any further configuration changes.
+
+`NotificationChain` can also observe "deep" - for example:
 
 ```C#
 private User myUser;
@@ -148,7 +199,7 @@ public String UserFirstName
 
 UserFirstName will notify when User or User.FirstName notifies. Currently depth of 4 is supported, but i'm working on refactoring to support more depths.
 
-`NotificationChain` can also be used to support Commands - for instance, Prism's `DelegateCommand.RaiseCanExecuteChanged`
+`NotificationChain` can also be used to support Commands - for instance, calling Prism's `DelegateCommand.RaiseCanExecuteChanged` when a watched property changes
 
 ```C#
 // this is a notifying property that shouldn't have to know about DoSomethingCommand
@@ -163,18 +214,20 @@ public bool HasInternetConnection
 	}
 }
 
-// DoSomethingCommand is initialized in the constructor like this
-// DoSomethingCommand = new DelegateCommand (DoSomething, CanDoSomething);
-// or you could use MvvmCommandWirer :)  
+public MyViewModel ()
+{
+	DoSomethingCommand = new DelegateCommand (DoSomething, CanDoSomething);
+	// or you could use MvvmCommandWirer :)
+}
 
 public DelegateCommand DoSomethingCommand
 { get; private set; }
 
 private bool CanDoSomething ()
 {
-	myNotificationChainManager.CreateOrGet (() => DoSomethingCommand)
+	myNotificationChainManager.CreateOrGet (() => DoSomethingCommand) // supply Expression since we're calling from a method
 	                          .Register (cn => cn.On (() => HasInternetConnection)
-	                                             .AndClearCalls ()
+	                                             .AndClearCalls () // clear default calls
 	                                             .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
 	                                             .Finish ());
 
@@ -187,9 +240,9 @@ private void DoSomething ()
 }
 ```
 
-So here we can eliminate Content Coupling by keeping knowledge of DoSomethingCommand away from HasInternetConnection and making DoSomethingCommand code contain the relationship to HasInternetConnection (which it already does).
+We can eliminate Content Coupling by keeping knowledge of DoSomethingCommand away from HasInternetConnection and making DoSomethingCommand code contain the relationship to HasInternetConnection (which it already does).
 
-`NotificationChain/Manager` also implement `IDisposable` - when disposed, they will unregister event handlers.
+So with **MvvmNotificationChainer**, you can reduce coupling by keeping the flow of knowledge one way - from dependent to source properties - for both properties, and ICommand.CanExecute methods.
 
 Status
 ------
@@ -207,7 +260,7 @@ Implemented Features:
 To Dos:
 
 * Write unit tests (I know, I suck at TDD)
-* Support for `NotifyCollectionChangedEventHandler`
+* Support for observing `NotifyCollectionChangedEventHandler`
 
 Caveats:
 
