@@ -12,8 +12,47 @@ namespace Demo.Utils
 {
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged, IDisposable
     {
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-        protected event PropertyChangedEventHandler PropertyChangedInternal = delegate { };
+        private event PropertyChangedEventHandler _PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                lock (this)
+                {
+                    PropertyChanged += value;
+                    AppendPropertyChangedOutput("[PropertyChanged] += handler on {0}".FormatWith(GetType().Name));
+                }
+            }
+            remove
+            {
+                lock (this)
+                {
+                    PropertyChanged -= value;
+                    AppendPropertyChangedOutput("[PropertyChanged] -= handler on {0}".FormatWith(GetType().Name));
+                }
+            }
+        }
+
+        private event PropertyChangedEventHandler _PropertyChangedInternal;
+        protected event PropertyChangedEventHandler PropertyChangedInternal
+        {
+            add
+            {
+                lock (this)
+                {
+                    _PropertyChangedInternal += value;
+                    AppendPropertyChangedOutput ("[PropertyChangedInternal] += handler on {0}".FormatWith (GetType().Name));
+                }
+            }
+            remove
+            {
+                lock (this)
+                {
+                    _PropertyChangedInternal -= value;
+                    AppendPropertyChangedOutput("[PropertyChangedInternal] -= handler on {0}".FormatWith (GetType().Name));
+                }
+            }
+        }
 
         protected virtual void RaisePropertyChanged<T> (Expression<Func<T>> propertyExpression)
         {
@@ -27,11 +66,11 @@ namespace Demo.Utils
 
         protected virtual void RaisePropertyChanged (PropertyChangedEventArgs args)
         {
-            if (PropertyChanged != null)
+            if (_PropertyChanged != null)
             {
                 if (args.PropertyName != "PropertyChangedOutput")
                     AppendPropertyChangedOutput ("[PropertyChanged] " + args.PropertyName);
-                var handler = PropertyChanged;
+                var handler = _PropertyChanged;
                 handler (this, args);
             }
             RaisePropertyChangedInternal (args);
@@ -44,16 +83,16 @@ namespace Demo.Utils
 
         protected virtual void RaisePropertyChangedInternal (PropertyChangedEventArgs args)
         {
-            if (PropertyChangedInternal != null)
+            if (_PropertyChangedInternal != null)
             {
                 if (args.PropertyName != "PropertyChangedOutput")
                     AppendPropertyChangedOutput ("[PropertyChangedInternal] " + args.PropertyName);
-                var handler = PropertyChangedInternal;
+                var handler = _PropertyChangedInternal;
                 handler (this, args);
             }
         }
 
-        private StringBuilder myPropertyChangedOutput = new StringBuilder ();
+        private readonly StringBuilder myPropertyChangedOutput = new StringBuilder ();
         private void AppendPropertyChangedOutput (String line)
         {
             myPropertyChangedOutput.AppendFormat ("[{0:s}] {1}\r\n", DateTime.Now, line);
@@ -67,6 +106,9 @@ namespace Demo.Utils
 
         protected NotifyPropertyChangedBase ()
         {
+            PropertyChanged += delegate { };
+            PropertyChangedInternal += delegate { };
+
             myNotificationChainManager.SetDefaultNotifyingObject (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
             myNotificationChainManager.AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
         }

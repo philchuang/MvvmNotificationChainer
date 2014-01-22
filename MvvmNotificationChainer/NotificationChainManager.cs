@@ -97,6 +97,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
 
+            // TODO use manager to limit number of event handlers being added to notifying object
             NotificationChain chain;
             if (!myChains.TryGetValue (dependentPropertyName, out chain))
             {
