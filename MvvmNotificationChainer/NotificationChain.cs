@@ -13,28 +13,27 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     {
         /// <summary>
         /// Fires when an observed property is changed. Can listen to this event directly or call AndCall().
-        /// First String parameter is the notifying property. Second String parameter is the dependent property.
-        /// TODO include object sender parameter?
+        /// Parameter #1 is sender, parameter #2 is the notifying property, parameter #3 is the dependent property.
         /// </summary>
-        public event Action<String, String> NotifyingPropertyChanged = delegate { };
+        public event Action<Object, String, String> NotifyingPropertyChanged = delegate { };
 
         /// <summary>
         /// Name of the property that depends on other properties (e.g. Cost depends on Quantity and Price)
         /// </summary>
         public String DependentPropertyName { get; private set; }
 
+        private List<String> myObservedPropertyNames = new List<string> ();
+        public IList<String> ObservedPropertyNames
+        { get { return myObservedPropertyNames.ToList (); } } 
+
         /// <summary>
         /// Whether or not the notification has been fully defined (if false, then modifications are still allowed)
         /// </summary>
         public bool IsFinished { get; private set; }
 
-        private object DefaultNotifyingObject { get; set; }
-        private Action<PropertyChangedEventHandler> DefaultAddEventAction { get; set; }
-        private Action<PropertyChangedEventHandler> DefaultRemoveEventAction { get; set; }
+        public bool IsDisposed { get; private set; }
 
-        private readonly Dictionary<Object, NotifyingPropertiesObserver> myNotifierToObserverMap;
-        private readonly List<NotifyingPropertiesObserver> myOtherObservers = new List<NotifyingPropertiesObserver> ();
-        private readonly PropertyChangedEventHandler myDelegate;
+        private Dictionary<String, NotificationChainManager> myDeepChainManagers = new Dictionary<string, NotificationChainManager> ();
 
         /// <summary>
         /// </summary>
@@ -44,42 +43,25 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
 
             DependentPropertyName = dependentPropertyName;
-
-            myNotifierToObserverMap = new Dictionary<Object, NotifyingPropertiesObserver> ();
-            myDelegate = OnNotifyingPropertyChanged;
-        }
-
-        private void OnNotifyingPropertyChanged (Object sender, PropertyChangedEventArgs args)
-        {
-            var handler = NotifyingPropertyChanged;
-            handler (args.PropertyName, DependentPropertyName);
         }
 
         public void Dispose ()
         {
-            foreach (var observer in myNotifierToObserverMap.Values.Union (myOtherObservers))
-            {
-                observer.NotifyingPropertyChanged -= myDelegate;
-                observer.Dispose ();
-            }
-            myNotifierToObserverMap.Clear ();
-            myOtherObservers.Clear();
+            if (IsDisposed) return;
+
+            myObservedPropertyNames.Clear ();
+            myObservedPropertyNames = null;
+
+            foreach (var handler in NotifyingPropertyChanged.GetInvocationList ().Cast<Action<Object, String, String>> ())
+                NotifyingPropertyChanged -= handler;
             NotifyingPropertyChanged = null;
-        }
 
-        public NotificationChain AndSetDefaultNotifyingObject (INotifyPropertyChanged notifyingObject)
-        {
-            return AndSetDefaultNotifyingObject (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h);
-        }
+            foreach (var ncm in myDeepChainManagers.Values)
+                ncm.Dispose();
+            myDeepChainManagers.Clear ();
+            myDeepChainManagers = null;
 
-        public NotificationChain AndSetDefaultNotifyingObject (Object notifyingObject,
-                                                                 Action<PropertyChangedEventHandler> addEventAction,
-                                                                 Action<PropertyChangedEventHandler> removeEventAction)
-        {
-            DefaultNotifyingObject = notifyingObject;
-            DefaultAddEventAction = addEventAction;
-            DefaultRemoveEventAction = removeEventAction;
-            return this;
+            IsDisposed = true;
         }
 
         /// <summary>
@@ -89,7 +71,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain Register (Action<NotificationChain> registrationAction)
         {
-            if (IsFinished) return this;
+            if (IsFinished || IsDisposed) return this;
 
             registrationAction.ThrowIfNull ("registrationAction");
 
@@ -99,121 +81,35 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
-        /// Specifies property name to observe on the default notifying object.
+        /// Specifies a property name to observe.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="propGetter"></param>
         /// <returns></returns>
         public NotificationChain On<T> (Expression<Func<T>> propGetter)
         {
-            return On (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, propGetter.GetPropertyName ());
+            if (IsFinished || IsDisposed) return this;
+
+            propGetter.ThrowIfNull ("propGetter");
+
+            return On (propGetter.GetPropertyName ());
         }
 
         /// <summary>
-        /// Specifies property name to observe on the default notifying object.
+        /// Specifies a property name to observe.
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
         public NotificationChain On (String propertyName)
         {
-            return On (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, propertyName);
-        }
+            if (IsFinished || IsDisposed) return this;
 
-        /// <summary>
-        /// Specifies an INotifyPropertyChanged object and property name to observe.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="notifyingObject"></param>
-        /// <param name="propGetter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T> (INotifyPropertyChanged notifyingObject, Expression<Func<T>> propGetter)
-        {
-            if (IsFinished) return this;
-
-            notifyingObject.ThrowIfNull ("notifyingObject");
-            propGetter.ThrowIfNull ("propGetter");
-
-            return On (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h, propGetter.GetPropertyName ());
-        }
-
-        /// <summary>
-        /// Specifies an INotifyPropertyChanged object and property name to observe.
-        /// </summary>
-        /// <param name="notifyingObject"></param>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public NotificationChain On (INotifyPropertyChanged notifyingObject, string propertyName)
-        {
-            if (IsFinished) return this;
-
-            notifyingObject.ThrowIfNull ("notifyingObject");
             propertyName.ThrowIfNullOrBlank ("propertyName");
 
-            return On (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h, propertyName);
-        }
-
-        /// <summary>
-        /// Specifies a PropertyChangedEvent and property name to observe.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="notifyingObject"></param>
-        /// <param name="addEventAction"></param>
-        /// <param name="removeEventAction"></param>
-        /// <param name="propGetter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T> (
-            Object notifyingObject,
-            Action<PropertyChangedEventHandler> addEventAction,
-            Action<PropertyChangedEventHandler> removeEventAction,
-            Expression<Func<T>> propGetter)
-        {
-            if (IsFinished) return this;
-
-            addEventAction.ThrowIfNull ("addEventAction");
-            removeEventAction.ThrowIfNull ("removeEventAction");
-            propGetter.ThrowIfNull ("propGetter");
-
-            return On (notifyingObject, addEventAction, removeEventAction, propGetter.GetPropertyName ());
-        }
-
-        /// <summary>
-        /// Specifies a PropertyChangedEvent and property name to observe.
-        /// </summary>
-        /// <param name="notifyingObject"></param>
-        /// <param name="addEventAction"></param>
-        /// <param name="removeEventAction"></param>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public NotificationChain On (
-            Object notifyingObject,
-            Action<PropertyChangedEventHandler> addEventAction,
-            Action<PropertyChangedEventHandler> removeEventAction,
-            String propertyName)
-        {
-            if (IsFinished) return this;
-
-            addEventAction.ThrowIfNull ("addEventAction");
-            removeEventAction.ThrowIfNull ("removeEventAction");
-            propertyName.ThrowIfNullOrBlank ("propertyName");
-
-            CreateOrGetObserver (notifyingObject, addEventAction, removeEventAction, propertyName);
+            if (!myObservedPropertyNames.Contains (propertyName))
+                myObservedPropertyNames.Add (propertyName);
 
             return this;
-        }
-
-        private NotifyingPropertiesObserver CreateOrGetObserver (object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction, string propertyName)
-        {
-            NotifyingPropertiesObserver observer;
-            if (!myNotifierToObserverMap.TryGetValue (notifyingObject, out observer))
-            {
-                observer = myNotifierToObserverMap[notifyingObject] = new NotifyingPropertiesObserver (addEventAction, removeEventAction);
-                observer.NotifyingPropertyChanged += myDelegate;
-            }
-
-            if (!observer.NotifyingPropertyNames.Contains (propertyName))
-                observer.NotifyingPropertyNames.Add (propertyName);
-
-            return observer;
         }
 
         /// <summary>
@@ -221,17 +117,74 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         /// <typeparam name="T1">The top-level Property to observe on notifyingObject, implements INotifyPropertyChanged</typeparam>
         /// <typeparam name="T2">The sub Property to observe on T1</typeparam>
-        /// <param name="propGetter"></param>
-        /// <param name="subPropGetter"></param>
+        /// <param name="prop1Getter"></param>
+        /// <param name="prop2Getter"></param>
         /// <returns></returns>
         public NotificationChain On<T1, T2> (
-            Expression<Func<T1>> propGetter,
-            Expression<Func<T1, T2>> subPropGetter)
+            Expression<Func<T1>> prop1Getter,
+            Expression<Func<T1, T2>> prop2Getter)
             where T1 : class, INotifyPropertyChanged
         {
-            if (IsFinished) return this;
+            if (IsFinished || IsDisposed) return this;
 
-            return On (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, propGetter, subPropGetter);
+            prop1Getter.ThrowIfNull("prop1Getter");
+            prop2Getter.ThrowIfNull("prop2Getter");
+
+            var prop1Name = prop1Getter.GetPropertyName ();
+            var prop1GetterCompiled = prop1Getter.Compile ();
+            var prop2Name = prop2Getter.GetPropertyName ();
+
+            var chainNames = new List<String> { prop1Name, "{0}.{1}".FormatWith(prop1Name, prop2Name) };
+
+            var fullChain = chainNames.Last();
+            if (myDeepChainManagers.ContainsKey (fullChain)) return this; // already configured
+
+            var prop1LastValue = (T1)null;
+
+            // TODO rethink starting from here... iterate using chainNames
+
+            On(prop1Name);
+
+            // TODO need to prevent this getting added multiple times?
+
+            AndCall ((sender, notifyingProperty, dependentProperty) =>
+                     {
+                         if (notifyingProperty != prop1Name) return;
+
+                         var prop1CurrentValue = prop1GetterCompiled ();
+                         NotificationChainManager prop1ChainManager;
+                         myDeepChainManagers.TryGetValue (prop1Name, out prop1ChainManager);
+
+                         if (prop1CurrentValue == null)
+                         {
+                             // no change in parent object
+                             if (prop1LastValue == null) return;
+
+                             // stop observing
+                             prop1ChainManager.ThrowIfNull("prop1ChainManager");
+                             prop1ChainManager.StopObserving();
+
+                             prop1LastValue = null;
+                             return;
+                         }
+
+                         // no change in parent object
+                         if (ReferenceEquals(prop1LastValue, prop1CurrentValue)) return;
+
+                         // link prop1.prop2 to notification chain
+                         if (prop1ChainManager == null)
+                         {
+                             prop1ChainManager = myDeepChainManagers[prop1Name] = new NotificationChainManager (prop1CurrentValue);
+                             prop1ChainManager.AddDefaultCall (NotifyingPropertyChanged);
+                         }
+                         prop1ChainManager.CreateOrGet(DependentPropertyName)
+                                          .Register(cn => cn.On(prop2Name));
+                         // don't need to finish because this chain may be appended to
+
+                         prop1LastValue = prop1CurrentValue;
+                     });
+
+            return this;
         }
 
         /// <summary>
@@ -251,7 +204,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T1 : class, INotifyPropertyChanged
             where T2 : class, INotifyPropertyChanged
         {
-            if (IsFinished) return this;
+            if (IsFinished || IsDisposed) return this;
 
             return On (DefaultNotifyingObject, DefaultAddEventAction, DefaultRemoveEventAction, prop1Getter, prop2Getter, prop3Getter);
         }
@@ -632,7 +585,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
 
-            AndCall ((notifyingProperty, dependentProperty) => onNotifyingPropertyChanged ());
+            AndCall ((sender, notifyingProperty, dependentProperty) => onNotifyingPropertyChanged ());
 
             return this;
         }
@@ -640,9 +593,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
         /// </summary>
-        /// <param name="onNotifyingPropertyChanged">First String parameter is the notifying property. Second String parameter is the dependent property</param>
+        /// <param name="onNotifyingPropertyChanged">Parameter #1 is sender, parameter #2 is the notifying property, parameter #3 is the dependent property</param>
         /// <returns></returns>
-        public NotificationChain AndCall (Action<String, String> onNotifyingPropertyChanged)
+        public NotificationChain AndCall (Action<Object, String, String> onNotifyingPropertyChanged)
         {
             if (IsFinished) return this;
 
