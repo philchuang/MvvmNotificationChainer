@@ -29,7 +29,7 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem1).Finish ());
+                                          .Configure (cn => cn.On (() => LineItem1).Finish ());
 
                 return myLineItem1 == null ? "+" : "x";
             }
@@ -60,7 +60,7 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem2).Finish ());
+                                          .Configure (cn => cn.On (() => LineItem2).Finish ());
 
                 return myLineItem2 == null ? "+" : "x";
             }
@@ -91,7 +91,7 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem3).Finish ());
+                                          .Configure (cn => cn.On (() => LineItem3).Finish ());
 
                 return myLineItem3 == null ? "+" : "x";
             }
@@ -111,12 +111,12 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem1, li => li.Cost)
-                                                             .On (() => LineItem2, li => li.Cost)
-                                                               // doing multiple LineItem3 properties just to show that it can be done
-                                                             .On (() => LineItem3, li => li.Quantity)
-                                                             .On (() => LineItem3, li => li.Price)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => LineItem1, li => li.Cost)
+                                                              .On (() => LineItem2, li => li.Cost)
+                                                                // doing multiple LineItem3 properties just to show that it can be done
+                                                              .On (() => LineItem3, li => li.Quantity)
+                                                              .On (() => LineItem3, li => li.Price)
+                                                              .Finish ());
 
                 return (LineItem1 != null ? LineItem1.Cost : 0m) +
                        (LineItem2 != null ? LineItem2.Cost : 0m) +
@@ -129,10 +129,10 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem1, li => li.Quantity)
-                                                             .On (() => LineItem2, li => li.Quantity)
-                                                             .On (() => LineItem3, li => li.Quantity)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => LineItem1, li => li.Quantity)
+                                                              .On (() => LineItem2, li => li.Quantity)
+                                                              .On (() => LineItem3, li => li.Quantity)
+                                                              .Finish ());
 
                 return (LineItem1 != null ? LineItem1.Quantity : 0) +
                        (LineItem2 != null ? LineItem2.Quantity : 0) +
@@ -145,10 +145,10 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => LineItem1)
-                                                             .On (() => LineItem2)
-                                                             .On (() => LineItem3)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => LineItem1)
+                                                              .On (() => LineItem2)
+                                                              .On (() => LineItem3)
+                                                              .Finish ());
 
                 return (LineItem1 != null ? 1 : 0) +
                        (LineItem2 != null ? 1 : 0) +
@@ -191,9 +191,9 @@ namespace Demo2
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Quantity)
-                                                             .On (() => Price)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Quantity)
+                                                              .On (() => Price)
+                                                              .Finish ());
 
                 return myQuantity * myPrice;
             }

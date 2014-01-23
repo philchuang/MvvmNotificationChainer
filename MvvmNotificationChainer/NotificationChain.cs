@@ -14,13 +14,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     public class NotificationChain : IDisposable
     {
         /// <summary>
+        /// The Manager that publishes to this chain.
+        /// </summary>
+        public NotificationChainManager ParentManager { get; set; }
+
+        /// <summary>
         /// Name of the property that depends on other properties (e.g. Cost depends on Quantity and Price)
         /// </summary>
         public String DependentPropertyName { get; private set; }
 
-        private List<String> myObservedPropertyNames = new List<string> ();
+        private List<String> myObservedPropertyNames = new List<String> ();
+
+        /// <summary>
+        /// The properties being observed by this chain
+        /// </summary>
         public IList<String> ObservedPropertyNames
-        { get { return myObservedPropertyNames.ToList (); } }
+        {
+            get { return myObservedPropertyNames.ToList (); }
+        }
 
         /// <summary>
         /// Whether or not the notification has been fully defined (if false, then modifications are still allowed)
@@ -29,25 +40,18 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         public bool IsDisposed { get; private set; }
 
-        private List<NotificationChainCallback> myCallbacks = new List<NotificationChainCallback> (); 
-
-        /// <summary>
-        /// Map of dependent property name to notification chain manager
-        /// </summary>
-        private Dictionary<String, NotificationChainManager> myDeepChainManagers = new Dictionary<string, NotificationChainManager> ();
-
-        /// <summary>
-        /// Map of dependent property name to function to get that property value
-        /// </summary>
-        private Dictionary<String, Func<Object, Object>> myDeepChainGetters = new Dictionary<string, Func<Object, Object>> ();
+        private List<NotificationChainCallback> myCallbacks = new List<NotificationChainCallback> ();
 
         /// <summary>
         /// </summary>
+        /// <param name="parentManager"></param>
         /// <param name="dependentPropertyName">Name of the depending property</param>
-        public NotificationChain (String dependentPropertyName)
+        public NotificationChain (NotificationChainManager parentManager, String dependentPropertyName)
         {
+            parentManager.ThrowIfNull ("parentManager");
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
 
+            ParentManager = parentManager;
             DependentPropertyName = dependentPropertyName;
         }
 
@@ -55,35 +59,29 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsDisposed) return;
 
+            ParentManager = null;
+
             myObservedPropertyNames.Clear ();
             myObservedPropertyNames = null;
 
             myCallbacks.Clear ();
             myCallbacks = null;
 
-            foreach (var ncm in myDeepChainManagers.Values)
-                ncm.Dispose();
-            myDeepChainManagers.Clear ();
-            myDeepChainManagers = null;
-
-            myDeepChainGetters.Clear ();
-            myDeepChainGetters = null;
-
             IsDisposed = true;
         }
 
         /// <summary>
-        /// Performs the registration/setup action on the current NotificationChain (if not yet finished).
+        /// Performs the configuration action on the current NotificationChain (if not yet Finished).
         /// </summary>
-        /// <param name="registrationAction"></param>
+        /// <param name="configAction"></param>
         /// <returns></returns>
-        public NotificationChain Register (Action<NotificationChain> registrationAction)
+        public NotificationChain Configure (Action<NotificationChain> configAction)
         {
             if (IsFinished || IsDisposed) return this;
 
-            registrationAction.ThrowIfNull ("registrationAction");
+            configAction.ThrowIfNull ("configAction");
 
-            registrationAction (this);
+            configAction (this);
 
             return this;
         }
@@ -91,7 +89,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Specifies a property (T1) to observe on the current notifying object.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T1"></typeparam>
         /// <param name="propGetter"></param>
         /// <returns></returns>
         public NotificationChain On<T1> (Expression<Func<T1>> propGetter)
@@ -136,8 +134,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter);
+                    prop1Getter,
+                    prop2Getter);
 
             return this;
         }
@@ -162,9 +160,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter);
+                    prop1Getter,
+                    prop2Getter,
+                    prop3Getter);
 
             return this;
         }
@@ -193,42 +191,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter,
-                prop4Getter);
+                    prop1Getter,
+                    prop2Getter,
+                    prop3Getter,
+                    prop4Getter);
 
             return this;
-        }
-
-        // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter.Compile line
-
-        private NotificationChainManager CreateOrGetDeepManager<T1> (Expression<Func<T1>> propGetter)
-        {
-            var propName = propGetter.GetPropertyName ();
-
-            NotificationChainManager mgr;
-            if (!myDeepChainManagers.TryGetValue (propName, out mgr))
-            {
-                mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
-                myDeepChainGetters[propName] = _ => propGetter.Compile ().Invoke ();
-            }
-            
-            return mgr;
-        }
-
-        private NotificationChainManager CreateOrGetDeepManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
-        {
-            var propName = propGetter.GetPropertyName ();
-
-            NotificationChainManager mgr;
-            if (!myDeepChainManagers.TryGetValue (propName, out mgr))
-            {
-                mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
-                myDeepChainGetters[propName] = _ => propGetter.Compile ().Invoke (default (T0));
-            }
-            
-            return mgr;
         }
 
         /// <summary>
@@ -270,7 +238,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .On (prop2Getter)
@@ -302,9 +270,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
 
-            On(prop1Getter);
+            On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager(prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .On (prop2Getter)
@@ -339,12 +307,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
 
-            On(prop1Getter);
+            On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager(prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .DeepOn (topLevelCallback, prop2Getter, prop3Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter)
+               .AndCall (topLevelCallback);
 
             return this;
         }
@@ -377,12 +346,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
 
-            On(prop1Getter);
+            On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager(prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .DeepOn (topLevelCallback, prop2Getter, prop3Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter)
+               .AndCall (topLevelCallback);
 
             return this;
         }
@@ -418,12 +388,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop3Getter.ThrowIfNull ("prop3Getter");
             prop4Getter.ThrowIfNull ("prop4Getter");
 
-            On(prop1Getter);
+            On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager(prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter)
+               .AndCall (topLevelCallback);
 
             return this;
         }
@@ -461,16 +432,16 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop3Getter.ThrowIfNull ("prop3Getter");
             prop4Getter.ThrowIfNull ("prop4Getter");
 
-            On(prop1Getter);
+            On (prop1Getter);
 
-            var mgr = CreateOrGetDeepManager(prop1Getter);
+            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
 
             return this;
         }
-        
+
         /// <summary>
         /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
         /// </summary>
@@ -513,19 +484,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsFinished) return this;
 
-            myCallbacks.Clear();
+            myCallbacks.Clear ();
 
             return this;
         }
 
-        private void FireCallbacks (Object sender, String notifyingProperty, String dependentProperty)
-        {
-            foreach (var c in myCallbacks.ToList ())
-                c (sender, notifyingProperty, dependentProperty);
-        }
-
         /// <summary>
-        /// Indicates that the ChainedNotification has been fully defined and prevents further modification/registration.
+        /// Indicates that the chain has been fully defined and prevents further configuration.
         /// </summary>
         public void Finish ()
         {
@@ -539,31 +504,19 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        public void Publish (Object sender, PropertyChangedEventArgs args)
+        /// <returns>whether or not the callbacks were triggered</returns>
+        public bool Publish (Object sender, PropertyChangedEventArgs args)
         {
-            if (myObservedPropertyNames.Contains (args.PropertyName))
-                FireCallbacks (sender, args.PropertyName, DependentPropertyName);
+            if (!myObservedPropertyNames.Contains (args.PropertyName)) return false;
 
-            NotificationChainManager manager;
-            if (myDeepChainManagers.TryGetValue (args.PropertyName, out manager))
-            {
-                var currentPropertyValue = (INotifyPropertyChanged) myDeepChainGetters[args.PropertyName] (sender);
-                if (currentPropertyValue != null)
-                {
-                    if (ReferenceEquals (currentPropertyValue, manager.ObservedObject))
-                        return; // no change
+            FireCallbacks (sender, args.PropertyName, DependentPropertyName);
+            return true;
+        }
 
-                    manager.StopObserving ();
-                    manager.Observe (currentPropertyValue);
-                }
-                else
-                {
-                    if (manager.ObservedObject == null)
-                        return; // no change
-
-                    manager.StopObserving();
-                }
-            }
+        private void FireCallbacks (Object sender, String notifyingProperty, String dependentProperty)
+        {
+            foreach (var c in myCallbacks.ToList ())
+                c (sender, notifyingProperty, dependentProperty);
         }
     }
 }

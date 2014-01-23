@@ -78,9 +78,9 @@ namespace Demo
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Example2Int1)
-                                                             .On (() => Example2Int2)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Example2Int1)
+                                                              .On (() => Example2Int2)
+                                                              .Finish ());
 
                 return myExample2Int1 + myExample2Int2;
             }
@@ -116,9 +116,9 @@ namespace Demo
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Example3Int1)
-                                                             .On (() => Example3Int2)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Example3Int1)
+                                                              .On (() => Example3Int2)
+                                                              .Finish ());
 
                 return myExample3Int1 + myExample3Int2;
             }
@@ -150,7 +150,7 @@ namespace Demo
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Example4CommandTextIndex).Finish ());
+                                          .Configure (cn => cn.On (() => Example4CommandTextIndex).Finish ());
 
                 return s_Example4CommandText[Example4CommandTextIndex];
             }
@@ -189,8 +189,8 @@ namespace Demo
             {
                 // notify when Example4Randomizer and Example4Randomizer.Int changes
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Example4Randomizer, rig => rig.Int)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Example4Randomizer, rig => rig.Int)
+                                                              .Finish ());
 
                 return Example4Randomizer != null ? Example4Randomizer.Int : -1;
             }
@@ -217,11 +217,11 @@ namespace Demo
         private bool CanExample5 (int? parameter)
         {
             myNotificationChainManager.CreateOrGet (() => Example5Command)
-                                      .Register (cn =>
-                                                 cn.AndClearCalls ()
-                                                   .On (() => Example5Int)
-                                                   .AndCall (Example5Command.RaiseCanExecuteChanged)
-                                                   .Finish ());
+                                      .Configure (cn =>
+                                                  cn.AndClearCalls ()
+                                                    .On (() => Example5Int)
+                                                    .AndCall (Example5Command.RaiseCanExecuteChanged)
+                                                    .Finish ());
 
             return parameter != null && parameter.Value % 2 == 1;
         }

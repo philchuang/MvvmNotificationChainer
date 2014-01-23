@@ -29,9 +29,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1,
-                                                                  m => m.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager1,
+                                                                   m => m.Name)
+                                                              .Finish ());
 
                 return myManager1 == null ? "N/A" : myManager1.Name;
             }
@@ -55,7 +55,7 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1).Finish ());
+                                          .Configure (cn => cn.On (() => Manager1).Finish ());
 
                 return Manager1 == null ? "+" : "x";
             }
@@ -69,10 +69,10 @@ namespace Demo3
         private bool CanManager1Employee1 ()
         {
             myNotificationChainManager.CreateOrGet (() => Manager1Employee1Command)
-                                      .Register (cn => cn.AndClearCalls ()
-                                                         .On (() => Manager1)
-                                                         .AndCall (Manager1Employee1Command.RaiseCanExecuteChanged)
-                                                         .Finish ());
+                                      .Configure (cn => cn.AndClearCalls ()
+                                                          .On (() => Manager1)
+                                                          .AndCall (Manager1Employee1Command.RaiseCanExecuteChanged)
+                                                          .Finish ());
 
             return myManager1 != null;
         }
@@ -93,9 +93,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1,
-                                                                  m => m.Employee1)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager1,
+                                                                   m => m.Employee1)
+                                                              .Finish ());
 
                 return Manager1 == null ? "" : Manager1.Employee1 == null ? "+" : "x";
             }
@@ -106,10 +106,10 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1,
-                                                                  m => m.Employee1,
-                                                                  e => e.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager1,
+                                                                   m => m.Employee1,
+                                                                   e => e.Name)
+                                                              .Finish ());
 
                 return myManager1 == null || myManager1.Employee1 == null ? "N/A" : myManager1.Employee1.Name;
             }
@@ -123,10 +123,10 @@ namespace Demo3
         private bool CanManager1Employee2 ()
         {
             myNotificationChainManager.CreateOrGet (() => Manager1Employee2Command)
-                                      .Register (cn => cn.AndClearCalls ()
-                                                         .On (() => Manager1)
-                                                         .AndCall (Manager1Employee2Command.RaiseCanExecuteChanged)
-                                                         .Finish ());
+                                      .Configure (cn => cn.AndClearCalls ()
+                                                          .On (() => Manager1)
+                                                          .AndCall (Manager1Employee2Command.RaiseCanExecuteChanged)
+                                                          .Finish ());
 
             return myManager1 != null;
         }
@@ -147,9 +147,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1,
-                                                                  m => m.Employee2)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager1,
+                                                                   m => m.Employee2)
+                                                              .Finish ());
 
                 return Manager1 == null ? "" : Manager1.Employee2 == null ? "+" : "x";
             }
@@ -160,10 +160,10 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager1,
-                                                                  m => m.Employee2,
-                                                                  e => e.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager1,
+                                                                   m => m.Employee2,
+                                                                   e => e.Name)
+                                                              .Finish ());
 
                 return myManager1 == null || myManager1.Employee2 == null ? "N/A" : myManager1.Employee2.Name;
             }
@@ -185,9 +185,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2,
-                                                                  m => m.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager2,
+                                                                   m => m.Name)
+                                                              .Finish ());
 
                 return myManager2 == null ? "N/A" : myManager2.Name;
             }
@@ -211,7 +211,7 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2).Finish ());
+                                          .Configure (cn => cn.On (() => Manager2).Finish ());
 
                 return Manager2 == null ? "+" : "x";
             }
@@ -225,10 +225,10 @@ namespace Demo3
         private bool CanManager2Employee1 ()
         {
             myNotificationChainManager.CreateOrGet (() => Manager2Employee1Command)
-                                      .Register (cn => cn.AndClearCalls ()
-                                                         .On (() => Manager2)
-                                                         .AndCall (Manager2Employee1Command.RaiseCanExecuteChanged)
-                                                         .Finish ());
+                                      .Configure (cn => cn.AndClearCalls ()
+                                                          .On (() => Manager2)
+                                                          .AndCall (Manager2Employee1Command.RaiseCanExecuteChanged)
+                                                          .Finish ());
 
             return myManager2 != null;
         }
@@ -249,9 +249,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2,
-                                                                  m => m.Employee1)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager2,
+                                                                   m => m.Employee1)
+                                                              .Finish ());
 
                 return Manager2 == null ? "" : Manager2.Employee1 == null ? "+" : "x";
             }
@@ -262,10 +262,10 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2,
-                                                                  m => m.Employee1,
-                                                                  e => e.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager2,
+                                                                   m => m.Employee1,
+                                                                   e => e.Name)
+                                                              .Finish ());
 
                 return myManager2 == null || myManager2.Employee1 == null ? "N/A" : myManager2.Employee1.Name;
             }
@@ -279,10 +279,10 @@ namespace Demo3
         private bool CanManager2Employee2 ()
         {
             myNotificationChainManager.CreateOrGet (() => Manager2Employee2Command)
-                                      .Register (cn => cn.AndClearCalls ()
-                                                         .On (() => Manager2)
-                                                         .AndCall (Manager2Employee2Command.RaiseCanExecuteChanged)
-                                                         .Finish ());
+                                      .Configure (cn => cn.AndClearCalls ()
+                                                          .On (() => Manager2)
+                                                          .AndCall (Manager2Employee2Command.RaiseCanExecuteChanged)
+                                                          .Finish ());
 
             return myManager2 != null;
         }
@@ -303,9 +303,9 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2,
-                                                                  m => m.Employee2)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager2,
+                                                                   m => m.Employee2)
+                                                              .Finish ());
 
                 return Manager2 == null ? "" : Manager2.Employee2 == null ? "+" : "x";
             }
@@ -316,10 +316,10 @@ namespace Demo3
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Manager2,
-                                                                  m => m.Employee2,
-                                                                  e => e.Name)
-                                                             .Finish ());
+                                          .Configure (cn => cn.On (() => Manager2,
+                                                                   m => m.Employee2,
+                                                                   e => e.Name)
+                                                              .Finish ());
 
                 return myManager2 == null || myManager2.Employee2 == null ? "N/A" : myManager2.Employee2.Name;
             }

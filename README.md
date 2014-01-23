@@ -82,9 +82,9 @@ public decimal Cost
 	get
 	{
 		myNotificationChainManager.CreateOrGet()
-		                          .Register (cn => cn.On (() => Quantity)
-		                                             .On (() => Price)
-		                                             .Finish ());
+		                          .Configure (cn => cn.On (() => Quantity)
+		                                              .On (() => Price)
+		                                              .Finish ());
 		
 		return Quantity * Price;
 	}
@@ -94,8 +94,8 @@ protected readonly NotificationChainManager myNotificationChainManager = new Not
 
 public MyViewModel ()
 {
-	myNotificationChainManager.SetDefaultNotifyingObject (this);
-	myNotificationChainManager.AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+	myNotificationChainManager.Observe (this);
+	myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
 }
 ```
 
@@ -113,11 +113,12 @@ public NotificationChain CreateOrGet ([CallerMemberName] string dependentPropert
 {
     dependentPropertyName.ThrowIfNull ("dependentPropertyName");
 
+    if (IsDisposed) return null;
+    
     NotificationChain chain;
     if (!myChains.TryGetValue (dependentPropertyName, out chain))
     {
         chain = myChains[dependentPropertyName] = new NotificationChain (dependentPropertyName);
-        chain.AndSetDefaultNotifyingObject (myDefaultNotifyingObject, myDefaultAddEventAction, myDefaultRemoveEventAction);
         foreach (var callback in myDefaultCallbacks)
             chain.AndCall (callback);
     }
@@ -126,13 +127,13 @@ public NotificationChain CreateOrGet ([CallerMemberName] string dependentPropert
 }
 ```
 
-The manager helps to provide, consolidate, and configure multiple `NotificationChain`s for a parent object. Note that this doesn't have to be a ViewModel, it's really for any class that implements or depends on `INotifyPropertyChanged`.
+The manager helps to provide, consolidate, and configure multiple `NotificationChain`s for a notifying object. Note that this doesn't have to be a ViewModel, it's really for any class that implements or depends on `INotifyPropertyChanged` (or `PropertyChangedEventHandler`s).
 
 `[CallerMemberName]` is used so that there is compile-time property name safety w/o using `Expression<Func<T>>`, and then you don't have to specify the dependentPropertyName parameter.
 
 The `NotificationChain.On` methods to supply a lambda Expression to specify which changed properties to watch.
 
-Each chain is smart enough to call `Register()` just once - therefore you can use `Expression<Func<T>>`; to have compile-time property name safety but only pay the performance penalty for the initial call. After `Finish()` is called, the other methods won't do anything.
+Each chain is smart enough to call `Configure()` just once - therefore you can use `Expression<Func<T>>`; to have compile-time property name safety but only pay the performance penalty for the initial call. After `Finish()` is called, the other methods won't do anything.
 
 Usage
 -----
@@ -140,16 +141,16 @@ Usage
 Now let's analyze the method calls line by line:
 
 ```C#
-/*NotificationChainManager*/ .SetDefaultNotifyingObject (this);
+/*NotificationChainManager*/ .Observe (this);
 ```
 
-When a new chain is created, it will be configured to listen to the current class (that implements `INotifyPropertyChanged`)
+The manager will observe the current class (that implements `INotifyPropertyChanged`) and publish notification events to its chains.
 
 ```C#
-/*NotificationChainManager*/ .AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+/*NotificationChainManager*/ .AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
 ```
 
-Also when a new chain is created, and when a watched property changes, have it call the current class' RaisePropertyChanged event.
+When a new chain is created, and when a watched property changes, have it call the current class' RaisePropertyChanged event.
 
 ```C#
 /*NotificationChainManager*/ .CreateOrGet()
@@ -158,7 +159,7 @@ Also when a new chain is created, and when a watched property changes, have it c
 Creates or gets an existing chain for the calling dependent property
 
 ```C#
-/*NotificationChain*/ .Register (cn => cn // ...
+/*NotificationChain*/ .Configure (cn => cn // ...
 ```
 
 Configures the chain with the given `Action<NotificationChain>`, which executes unless `Finish()` has been called.
@@ -203,15 +204,15 @@ public String UserFirstName
 	get
 	{
 		myNotificationChainManager.CreateOrGet()
-		                          .Register (cn => cn.On (() => User, u => u.FirstName)
-		                                             .Finish ());
+		                          .Configure (cn => cn.On (() => User, u => u.FirstName)
+		                                              .Finish ());
 		
 		return User != null ? User.FirstName : String.Empty;
 	}
 }
 ```
 
-UserFirstName will notify when User or User.FirstName notifies. Currently depth of 4 is supported, but i'm working on refactoring to support more depths.
+*UserFirstName* will notify when *User* or *User.FirstName* notifies. Currently depth of 4 is supported, but it's easy enough to add more depth if necessary.
 
 Integrate with MVVM ICommands
 -----------------------------
@@ -242,11 +243,13 @@ public DelegateCommand DoSomethingCommand
 
 private bool CanDoSomething ()
 {
-	myNotificationChainManager.CreateOrGet (() => DoSomethingCommand) // supply Expression since we're calling from a method
-	                          .Register (cn => cn.On (() => HasInternetConnection)
-	                                             .AndClearCalls () // clear default calls
-	                                             .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
-	                                             .Finish ());
+	// supply Expression since we're calling from a method
+	myNotificationChainManager.CreateOrGet (() => DoSomethingCommand)
+	                          .Configure (cn => cn.On (() => HasInternetConnection)
+	                                              // clear default calls since we don't want to call RaisePropertyChanged
+	                                              .AndClearCalls ()
+	                                              .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
+	                                              .Finish ());
 
     return HasInternetConnection;
 }
@@ -257,7 +260,7 @@ private void DoSomething ()
 }
 ```
 
-We can eliminate Content Coupling by keeping knowledge of DoSomethingCommand away from HasInternetConnection and making DoSomethingCommand code contain the relationship to HasInternetConnection (which it already does).
+We can eliminate Content Coupling by keeping knowledge of *DoSomethingCommand* away from *HasInternetConnection* and making *DoSomethingCommand* code contain the relationship to *HasInternetConnection* (which it already does via the return value).
 
 Summary
 -------
@@ -274,7 +277,7 @@ Implemented Features:
 * Performs PropertyChanged for a dependent property whenever a watched property changes
 * Supports notification chains 4 levels deep
 * Compile-time property name safety for easy refactoring
-* Creates & registers just once per chain, trivial performance hit on initialization
+* Creates & configures just once per chain, trivial performance hit on initialization
 * Bolt-on code: No need to change base classes, or extensively modify existing ViewModels
 
 To Dos:
