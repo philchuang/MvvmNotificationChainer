@@ -77,12 +77,10 @@ namespace Demo
         {
             get
             {
-                // this chain listens to MainWindowViewModel.PropertyChanged event
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (this, () => Example2Int1)
-                                                             .On (this, () => Example2Int2)
-                                                             .AndCall (() => RaisePropertyChanged ()))
-                                          .Finish ();
+                                          .Register (cn => cn.On (() => Example2Int1)
+                                                             .On (() => Example2Int2)
+                                                             .Finish ());
 
                 return myExample2Int1 + myExample2Int2;
             }
@@ -117,11 +115,10 @@ namespace Demo
         {
             get
             {
-                // this chain listens to MainWindowViewModel.PropertyChangedInternal event (set in NotifyPropertyChangedBase constructor)
                 myNotificationChainManager.CreateOrGet ()
                                           .Register (cn => cn.On (() => Example3Int1)
-                                                             .On (() => Example3Int2))
-                                          .Finish ();
+                                                             .On (() => Example3Int2)
+                                                             .Finish ());
 
                 return myExample3Int1 + myExample3Int2;
             }
@@ -192,8 +189,7 @@ namespace Demo
             {
                 // notify when Example4Randomizer and Example4Randomizer.Int changes
                 myNotificationChainManager.CreateOrGet ()
-                                          .Register (cn => cn.On (() => Example4Randomizer,
-                                                                  rig => rig.Int)
+                                          .Register (cn => cn.On (() => Example4Randomizer, rig => rig.Int)
                                                              .Finish ());
 
                 return Example4Randomizer != null ? Example4Randomizer.Int : -1;

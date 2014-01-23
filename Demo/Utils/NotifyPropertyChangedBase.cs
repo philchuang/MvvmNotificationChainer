@@ -109,8 +109,8 @@ namespace Demo.Utils
             PropertyChanged += delegate { };
             PropertyChangedInternal += delegate { };
 
-            myNotificationChainManager.SetDefaultNotifyingObject (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
-            myNotificationChainManager.AddDefaultCall ((notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+            myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
+            myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
         }
 
         public virtual void Dispose ()

@@ -18,15 +18,17 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public bool IsDisposed { get; private set; }
 
         /// <summary>
-        /// Map of notifying object to map of dependent property name to notification chain
+        /// Map of dependent property name to notification chain
         /// </summary>
         private Dictionary<String, NotificationChain> myChains = new Dictionary<string, NotificationChain> ();
 
-        private List<Action<Object, String, String>> myDefaultCallbacks = new List<Action<Object, string, string>> ();
+        private List<NotificationChainCallback> myDefaultCallbacks = new List<NotificationChainCallback> ();
 
         private PropertyChangedEventHandler myPropertyChangedEventHandler;
 
-        private Object myNotifyingObject;
+        public Object ObservedObject
+        { get; private set; }
+
         private Action<PropertyChangedEventHandler> myRemovePropertyChangedEventHandler;
 
         public NotificationChainManager ()
@@ -63,9 +65,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             if (IsDisposed) return;
 
-            if (ReferenceEquals (myNotifyingObject, notifyingObject)) return;
+            if (ReferenceEquals (ObservedObject, notifyingObject)) return;
 
-            if (myNotifyingObject != null)
+            if (ObservedObject != null)
                 throw new InvalidOperationException ("Can't observe a different object without calling StopObserving() first");
 
             addEventAction (myPropertyChangedEventHandler);
@@ -76,13 +78,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsDisposed) return;
 
-            if (myNotifyingObject == null) return;
+            if (ObservedObject == null) return;
 
             lock (this)
             {
                 myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
                 myRemovePropertyChangedEventHandler = null;
-                myNotifyingObject = null;
+                ObservedObject = null;
             }
         }
 
@@ -90,7 +92,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsDisposed) return;
 
-            myNotifyingObject = null;
+            ObservedObject = null;
 
             myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
             myRemovePropertyChangedEventHandler = null;
@@ -138,9 +140,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
         /// </summary>
-        /// <param name="onNotifyingPropertyChanged">Parameter #1 is sender, parameter #2 is the notifying property, parameter #3 is the dependent property</param>
+        /// <param name="onNotifyingPropertyChanged"></param>
         /// <returns></returns>
-        public void AddDefaultCall (Action<Object, String, String> onNotifyingPropertyChanged)
+        public void AddDefaultCall (NotificationChainCallback onNotifyingPropertyChanged)
         {
             onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
 

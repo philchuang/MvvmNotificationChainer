@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="NotificationChain.cs" />
     <Compile Include="NotificationChainManager.cs" />
-    <Compile Include="NotificationChainManagerWrapper.cs" />
     <Compile Include="NotifyingPropertiesObserver.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
