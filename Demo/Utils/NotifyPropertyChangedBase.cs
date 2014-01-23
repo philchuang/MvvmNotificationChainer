@@ -12,28 +12,28 @@ namespace Demo.Utils
 {
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged, IDisposable
     {
-        private event PropertyChangedEventHandler _PropertyChanged;
+        private event PropertyChangedEventHandler _PropertyChanged = delegate { }; 
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
             {
                 lock (this)
                 {
-                    PropertyChanged += value;
-                    AppendPropertyChangedOutput("[PropertyChanged] += handler on {0}".FormatWith(GetType().Name));
+                    _PropertyChanged += value;
+                    AppendPropertyChangedOutput("[PC] += handler on {0} from {1}".FormatWith(GetType().Name, value.Method.DeclaringType.Name));
                 }
             }
             remove
             {
                 lock (this)
                 {
-                    PropertyChanged -= value;
-                    AppendPropertyChangedOutput("[PropertyChanged] -= handler on {0}".FormatWith(GetType().Name));
+                    _PropertyChanged -= value;
+                    AppendPropertyChangedOutput("[PC] -= handler on {0} from {1}".FormatWith(GetType().Name, value.Method.DeclaringType.Name));
                 }
             }
         }
 
-        private event PropertyChangedEventHandler _PropertyChangedInternal;
+        private event PropertyChangedEventHandler _PropertyChangedInternal = delegate { };
         protected event PropertyChangedEventHandler PropertyChangedInternal
         {
             add
@@ -41,7 +41,7 @@ namespace Demo.Utils
                 lock (this)
                 {
                     _PropertyChangedInternal += value;
-                    AppendPropertyChangedOutput ("[PropertyChangedInternal] += handler on {0}".FormatWith (GetType().Name));
+                    AppendPropertyChangedOutput("[PCi] += handler on {0} from {1}".FormatWith(GetType().Name, value.Method.DeclaringType.Name));
                 }
             }
             remove
@@ -49,7 +49,7 @@ namespace Demo.Utils
                 lock (this)
                 {
                     _PropertyChangedInternal -= value;
-                    AppendPropertyChangedOutput("[PropertyChangedInternal] -= handler on {0}".FormatWith (GetType().Name));
+                    AppendPropertyChangedOutput("[PCi] -= handler on {0} from {1}".FormatWith(GetType().Name, value.Method.DeclaringType.Name));
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace Demo.Utils
             if (_PropertyChanged != null)
             {
                 if (args.PropertyName != "PropertyChangedOutput")
-                    AppendPropertyChangedOutput ("[PropertyChanged] " + args.PropertyName);
+                    AppendPropertyChangedOutput ("[PC] " + args.PropertyName);
                 var handler = _PropertyChanged;
                 handler (this, args);
             }
@@ -86,7 +86,7 @@ namespace Demo.Utils
             if (_PropertyChangedInternal != null)
             {
                 if (args.PropertyName != "PropertyChangedOutput")
-                    AppendPropertyChangedOutput ("[PropertyChangedInternal] " + args.PropertyName);
+                    AppendPropertyChangedOutput ("[PCi] " + args.PropertyName);
                 var handler = _PropertyChangedInternal;
                 handler (this, args);
             }
@@ -106,9 +106,6 @@ namespace Demo.Utils
 
         protected NotifyPropertyChangedBase ()
         {
-            PropertyChanged += delegate { };
-            PropertyChangedInternal += delegate { };
-
             myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
             myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
         }

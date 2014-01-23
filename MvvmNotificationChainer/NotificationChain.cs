@@ -9,7 +9,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     public delegate void NotificationChainCallback (Object sender, String notifyingProperty, String dependentProperty);
 
     /// <summary>
-    /// Defines a NotificationChain. Observes multiple notifying properties on multiple objects and triggers NotifyingPropertyChanged for the dependent property.
+    /// Defines a NotificationChain. Observes multiple notifying properties and triggers callbacks for the dependent property.
     /// </summary>
     public class NotificationChain : IDisposable
     {
@@ -89,12 +89,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
-        /// Specifies a property name to observe.
+        /// Specifies a property (T1) to observe on the current notifying object.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="propGetter"></param>
         /// <returns></returns>
-        public NotificationChain On<T> (Expression<Func<T>> propGetter)
+        public NotificationChain On<T1> (Expression<Func<T1>> propGetter)
         {
             if (IsFinished || IsDisposed) return this;
 
@@ -104,23 +104,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
-        /// Specifies a property name to observe.
-        /// </summary>
-        /// <typeparam name="T0"></typeparam>
-        /// <typeparam name="T1"></typeparam>
-        /// <param name="propGetter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T0, T1> (Expression<Func<T0, T1>> propGetter)
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            propGetter.ThrowIfNull ("propGetter");
-
-            return On (propGetter.GetPropertyName ());
-        }
-
-        /// <summary>
-        /// Specifies a property name to observe.
+        /// Specifies a property name to observe on the current notifying object
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
@@ -135,6 +119,89 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             return this;
         }
+
+        /// <summary>
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
+        /// </summary>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1</typeparam>
+        /// <param name="prop1Getter"></param>
+        /// <param name="prop2Getter"></param>
+        /// <returns></returns>
+        public NotificationChain On<T1, T2> (
+            Expression<Func<T1>> prop1Getter,
+            Expression<Func<T1, T2>> prop2Getter)
+            where T1 : class, INotifyPropertyChanged
+        {
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+                prop1Getter,
+                prop2Getter);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
+        /// </summary>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2</typeparam>
+        /// <param name="prop1Getter"></param>
+        /// <param name="prop2Getter"></param>
+        /// <param name="prop3Getter"></param>
+        /// <returns></returns>
+        public NotificationChain On<T1, T2, T3> (
+            Expression<Func<T1>> prop1Getter,
+            Expression<Func<T1, T2>> prop2Getter,
+            Expression<Func<T2, T3>> prop3Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+        {
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+                prop1Getter,
+                prop2Getter,
+                prop3Getter);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
+        /// </summary>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T4">The property (T4) to observe on T3</typeparam>
+        /// <param name="prop1Getter"></param>
+        /// <param name="prop2Getter"></param>
+        /// <param name="prop3Getter"></param>
+        /// <param name="prop4Getter"></param>
+        /// <returns></returns>
+        public NotificationChain On<T1, T2, T3, T4> (
+            Expression<Func<T1>> prop1Getter,
+            Expression<Func<T1, T2>> prop2Getter,
+            Expression<Func<T2, T3>> prop3Getter,
+            Expression<Func<T3, T4>> prop4Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+            where T3 : class, INotifyPropertyChanged
+        {
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+                prop1Getter,
+                prop2Getter,
+                prop3Getter,
+                prop4Getter);
+
+            return this;
+        }
+
+        // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter.Compile line
 
         private NotificationChainManager CreateOrGetDeepManager<T1> (Expression<Func<T1>> propGetter)
         {
@@ -165,37 +232,31 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object (T0)
         /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
+        /// <typeparam name="T0"></typeparam>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="propGetter"></param>
         /// <returns></returns>
-        public NotificationChain On<T1, T2> (
-            Expression<Func<T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter)
-            where T1 : class, INotifyPropertyChanged
+        private NotificationChain On<T0, T1> (Expression<Func<T0, T1>> propGetter)
         {
             if (IsFinished || IsDisposed) return this;
 
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter);
+            propGetter.ThrowIfNull ("propGetter");
 
-            return this;
+            return On (propGetter.GetPropertyName ());
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
         /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
         /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
         /// <returns></returns>
-        private NotificationChain On<T1, T2> (
+        private NotificationChain DeepOn<T1, T2> (
             NotificationChainCallback topLevelCallback,
             Expression<Func<T1>> prop1Getter,
             Expression<Func<T1, T2>> prop2Getter)
@@ -207,61 +268,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
-
-            mgr.CreateOrGet ("../" + DependentPropertyName)
-               .On (prop2Getter)
-               .AndCall (topLevelCallback);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
-        /// </summary>
-        /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T0, T1, T2> (
-            Expression<Func<T0, T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter)
-            where T0 : class, INotifyPropertyChanged
-            where T1 : class, INotifyPropertyChanged
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
-        /// </summary>
-        /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <param name="topLevelCallback"></param>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
-        /// <returns></returns>
-        private NotificationChain On<T0, T1, T2> (
-            NotificationChainCallback topLevelCallback,
-            Expression<Func<T0, T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter)
-            where T0 : class, INotifyPropertyChanged
-            where T1 : class, INotifyPropertyChanged
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            topLevelCallback.ThrowIfNull ("topLevelCallback");
-            prop1Getter.ThrowIfNull ("prop1Getter");
-            prop2Getter.ThrowIfNull("prop2Getter");
+            On (prop1Getter);
 
             var mgr = CreateOrGetDeepManager (prop1Getter);
 
@@ -273,44 +280,51 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object (T0), and its sub-properties (T2+) to observe
         /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2</typeparam>
+        /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
-        /// <param name="prop3Getter"></param>
         /// <returns></returns>
-        public NotificationChain On<T1, T2, T3> (
-            Expression<Func<T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter,
-            Expression<Func<T2, T3>> prop3Getter)
+        private NotificationChain DeepOn<T0, T1, T2> (
+            NotificationChainCallback topLevelCallback,
+            Expression<Func<T0, T1>> prop1Getter,
+            Expression<Func<T1, T2>> prop2Getter)
+            where T0 : class, INotifyPropertyChanged
             where T1 : class, INotifyPropertyChanged
-            where T2 : class, INotifyPropertyChanged
         {
             if (IsFinished || IsDisposed) return this;
 
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter);
+            topLevelCallback.ThrowIfNull ("topLevelCallback");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+
+            On(prop1Getter);
+
+            var mgr = CreateOrGetDeepManager(prop1Getter);
+
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (prop2Getter)
+               .AndCall (topLevelCallback);
 
             return this;
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
         /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2</typeparam>
         /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
         /// <param name="prop3Getter"></param>
         /// <returns></returns>
-        private NotificationChain On<T1, T2, T3> (
+        private NotificationChain DeepOn<T1, T2, T3> (
             NotificationChainCallback topLevelCallback,
             Expression<Func<T1>> prop1Getter,
             Expression<Func<T1, T2>> prop2Getter,
@@ -322,59 +336,32 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
-            prop2Getter.ThrowIfNull("prop2Getter");
-            prop3Getter.ThrowIfNull("prop3Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
+            On(prop1Getter);
+
+            var mgr = CreateOrGetDeepManager(prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .On (topLevelCallback, prop2Getter, prop3Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter);
 
             return this;
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object (T0), and its sub-properties (T2+) to observe
         /// </summary>
         /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2</typeparam>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
-        /// <param name="prop3Getter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T0, T1, T2, T3> (
-            Expression<Func<T0, T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter,
-            Expression<Func<T2, T3>> prop3Getter)
-            where T0 : class, INotifyPropertyChanged
-            where T1 : class, INotifyPropertyChanged
-            where T2 : class, INotifyPropertyChanged
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
-        /// </summary>
-        /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2</typeparam>
         /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
         /// <param name="prop3Getter"></param>
         /// <returns></returns>
-        private NotificationChain On<T0, T1, T2, T3> (
+        private NotificationChain DeepOn<T0, T1, T2, T3> (
             NotificationChainCallback topLevelCallback,
             Expression<Func<T0, T1>> prop1Getter,
             Expression<Func<T1, T2>> prop2Getter,
@@ -387,63 +374,33 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
-            prop2Getter.ThrowIfNull("prop2Getter");
-            prop3Getter.ThrowIfNull("prop3Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
+            On(prop1Getter);
+
+            var mgr = CreateOrGetDeepManager(prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .On (topLevelCallback, prop2Getter, prop3Getter);
-
-            return this;
-        }
-        
-        /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
-        /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T4">The Property (T4) to observe on T3</typeparam>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
-        /// <param name="prop3Getter"></param>
-        /// <param name="prop4Getter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T1, T2, T3, T4> (
-            Expression<Func<T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter,
-            Expression<Func<T2, T3>> prop3Getter,
-            Expression<Func<T3, T4>> prop4Getter)
-            where T1 : class, INotifyPropertyChanged
-            where T2 : class, INotifyPropertyChanged
-            where T3 : class, INotifyPropertyChanged
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter,
-                prop4Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter);
 
             return this;
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
         /// </summary>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T4">The Property (T4) to observe on T3</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T4">The property (T4) to observe on T3</typeparam>
         /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
         /// <param name="prop3Getter"></param>
         /// <param name="prop4Getter"></param>
         /// <returns></returns>
-        private NotificationChain On<T1, T2, T3, T4> (
+        private NotificationChain DeepOn<T1, T2, T3, T4> (
             NotificationChainCallback topLevelCallback,
             Expression<Func<T1>> prop1Getter,
             Expression<Func<T1, T2>> prop2Getter,
@@ -456,68 +413,36 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             topLevelCallback.ThrowIfNull ("topLevelCallback");
-            prop1Getter.ThrowIfNull("prop1Getter");
-            prop2Getter.ThrowIfNull("prop2Getter");
-            prop3Getter.ThrowIfNull("prop3Getter");
-            prop4Getter.ThrowIfNull("prop4Getter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+            prop4Getter.ThrowIfNull ("prop4Getter");
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
+            On(prop1Getter);
+
+            var mgr = CreateOrGetDeepManager(prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .On (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
-
-            return this;
-        }
-        
-        /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
-        /// </summary>
-        /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T4">The Property (T4) to observe on T3</typeparam>
-        /// <param name="prop1Getter"></param>
-        /// <param name="prop2Getter"></param>
-        /// <param name="prop3Getter"></param>
-        /// <param name="prop4Getter"></param>
-        /// <returns></returns>
-        public NotificationChain On<T0, T1, T2, T3, T4> (
-            Expression<Func<T0, T1>> prop1Getter,
-            Expression<Func<T1, T2>> prop2Getter,
-            Expression<Func<T2, T3>> prop3Getter,
-            Expression<Func<T3, T4>> prop4Getter)
-            where T0 : class, INotifyPropertyChanged
-            where T1 : class, INotifyPropertyChanged
-            where T2 : class, INotifyPropertyChanged
-            where T3 : class, INotifyPropertyChanged
-        {
-            if (IsFinished || IsDisposed) return this;
-
-            On ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                prop1Getter,
-                prop2Getter,
-                prop3Getter,
-                prop4Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
 
             return this;
         }
 
         /// <summary>
-        /// Specifies a property of type INotifyPropertyChanged to observe on the default notifying object, and sub-property to observe
+        /// Specifies a property (T1) to observe on the current notifying object, and its sub-properties (T2+) to observe
         /// </summary>
         /// <typeparam name="T0">The top-level (T0) notifyingObject, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T1">The Property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T2">The Property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T3">The Property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
-        /// <typeparam name="T4">The Property (T4) to observe on T3</typeparam>
+        /// <typeparam name="T1">The property (T1) to observe on T0, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T2">The property (T2) to observe on T1, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T3">The property (T3) to observe on T2, implements INotifyPropertyChanged</typeparam>
+        /// <typeparam name="T4">The property (T4) to observe on T3</typeparam>
         /// <param name="topLevelCallback"></param>
         /// <param name="prop1Getter"></param>
         /// <param name="prop2Getter"></param>
         /// <param name="prop3Getter"></param>
         /// <param name="prop4Getter"></param>
         /// <returns></returns>
-        private NotificationChain On<T0, T1, T2, T3, T4> (
+        private NotificationChain DeepOn<T0, T1, T2, T3, T4> (
             NotificationChainCallback topLevelCallback,
             Expression<Func<T0, T1>> prop1Getter,
             Expression<Func<T1, T2>> prop2Getter,
@@ -531,15 +456,17 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             topLevelCallback.ThrowIfNull ("topLevelCallback");
-            prop1Getter.ThrowIfNull("prop1Getter");
-            prop2Getter.ThrowIfNull("prop2Getter");
-            prop3Getter.ThrowIfNull("prop3Getter");
-            prop4Getter.ThrowIfNull("prop4Getter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+            prop4Getter.ThrowIfNull ("prop4Getter");
 
-            var mgr = CreateOrGetDeepManager (prop1Getter);
+            On(prop1Getter);
+
+            var mgr = CreateOrGetDeepManager(prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
-               .On (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
+               .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
 
             return this;
         }
@@ -607,6 +534,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             IsFinished = true;
         }
 
+        /// <summary>
+        /// Pushes PropertyChangedEventArgs input for processing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         public void Publish (Object sender, PropertyChangedEventArgs args)
         {
             if (myObservedPropertyNames.Contains (args.PropertyName))
@@ -621,8 +553,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                     if (ReferenceEquals (currentPropertyValue, manager.ObservedObject))
                         return; // no change
 
-                    if (manager.ObservedObject != null)
-                        manager.StopObserving ();
+                    manager.StopObserving ();
                     manager.Observe (currentPropertyValue);
                 }
                 else
