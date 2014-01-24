@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MvvmNotificationChainer")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription ("Portable Class Library for fluent chaining of ViewModel property notifications. Targets .NET 4.5, SL 4+, WP7+, Windows Store.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("PhilChuang.com")]
 [assembly: AssemblyProduct("MvvmNotificationChainer")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCopyright("Copyright © PhilChuang.com 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]

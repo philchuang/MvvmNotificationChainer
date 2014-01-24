@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>$id$</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>$author$</authors>
+		<owners>$author$</owners>
+		<licenseUrl>http://github.com/philchuang/MvvmNotificationChainer/blob/master/LICENSE.txt</licenseUrl>
+		<projectUrl>http://github.com/philchuang/MvvmNotificationChainer</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>$description$</description>
+		<releaseNotes></releaseNotes>
+		<copyright>Copyright 2014</copyright>
+		<tags>MVVM INotifyPropertyChanged PCL</tags>
+	</metadata>
+</package>
