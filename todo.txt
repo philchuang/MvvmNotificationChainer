@@ -4,3 +4,4 @@
 * unit tests
 	* notification chain
 	* manager
+* handle INotifyCollectionChanged
