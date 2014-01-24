@@ -12,8 +12,61 @@ namespace Demo.Utils
 {
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged, IDisposable
     {
+        public virtual event PropertyChangedEventHandler PropertyChanged = delegate { }; 
+        protected virtual event PropertyChangedEventHandler PropertyChangedInternal = delegate { };
+
+        protected virtual void RaisePropertyChanged<T> (Expression<Func<T>> propertyExpression)
+        {
+            RaisePropertyChanged (propertyExpression.GetPropertyName ());
+        }
+
+        protected virtual void RaisePropertyChanged ([CallerMemberName] string propertyName = null)
+        {
+            RaisePropertyChanged (new PropertyChangedEventArgs (propertyName));
+        }
+
+        protected virtual void RaisePropertyChanged (PropertyChangedEventArgs args)
+        {
+            if (PropertyChanged != null)
+            {
+                var handler = PropertyChanged;
+                handler (this, args);
+            }
+            RaisePropertyChangedInternal (args);
+        }
+
+        protected virtual void RaisePropertyChangedInternal ([CallerMemberName] string propertyName = null)
+        {
+            RaisePropertyChangedInternal (new PropertyChangedEventArgs (propertyName));
+        }
+
+        protected virtual void RaisePropertyChangedInternal (PropertyChangedEventArgs args)
+        {
+            if (PropertyChangedInternal != null)
+            {
+                var handler = PropertyChangedInternal;
+                handler (this, args);
+            }
+        }
+
+        protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager ();
+
+        protected NotifyPropertyChangedBase ()
+        {
+            myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
+            myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+        }
+
+        public virtual void Dispose ()
+        {
+            myNotificationChainManager.Dispose ();
+        }
+    }
+
+    public abstract class NotifyPropertyChangedBaseDebug : NotifyPropertyChangedBase
+    {
         private event PropertyChangedEventHandler _PropertyChanged = delegate { }; 
-        public event PropertyChangedEventHandler PropertyChanged
+        public override event PropertyChangedEventHandler PropertyChanged
         {
             add
             {
@@ -34,7 +87,7 @@ namespace Demo.Utils
         }
 
         private event PropertyChangedEventHandler _PropertyChangedInternal = delegate { };
-        protected event PropertyChangedEventHandler PropertyChangedInternal
+        protected override event PropertyChangedEventHandler PropertyChangedInternal
         {
             add
             {
@@ -54,17 +107,7 @@ namespace Demo.Utils
             }
         }
 
-        protected virtual void RaisePropertyChanged<T> (Expression<Func<T>> propertyExpression)
-        {
-            RaisePropertyChanged (propertyExpression.GetPropertyName ());
-        }
-
-        protected virtual void RaisePropertyChanged ([CallerMemberName] string propertyName = null)
-        {
-            RaisePropertyChanged (new PropertyChangedEventArgs (propertyName));
-        }
-
-        protected virtual void RaisePropertyChanged (PropertyChangedEventArgs args)
+        protected override void RaisePropertyChanged (PropertyChangedEventArgs args)
         {
             if (_PropertyChanged != null)
             {
@@ -76,12 +119,7 @@ namespace Demo.Utils
             RaisePropertyChangedInternal (args);
         }
 
-        protected virtual void RaisePropertyChangedInternal ([CallerMemberName] string propertyName = null)
-        {
-            RaisePropertyChangedInternal (new PropertyChangedEventArgs (propertyName));
-        }
-
-        protected virtual void RaisePropertyChangedInternal (PropertyChangedEventArgs args)
+        protected override void RaisePropertyChangedInternal (PropertyChangedEventArgs args)
         {
             if (_PropertyChangedInternal != null)
             {
@@ -101,18 +139,5 @@ namespace Demo.Utils
 
         public String PropertyChangedOutput
         { get { return myPropertyChangedOutput.ToString (); } }
-
-        protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager ();
-
-        protected NotifyPropertyChangedBase ()
-        {
-            myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
-            myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
-        }
-
-        public virtual void Dispose ()
-        {
-            myNotificationChainManager.Dispose ();
-        }
     }
 }

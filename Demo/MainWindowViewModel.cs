@@ -13,7 +13,7 @@ using Microsoft.Practices.Prism.Commands;
 
 namespace Demo
 {
-    public class MainWindowViewModel : NotifyPropertyChangedBase
+    public class MainWindowViewModel : NotifyPropertyChangedBaseDebug
     {
         // ----- the old way of doing chained properties ------------------------------------------
         // ----- note that the "parent" properties (Int1 and Int2) have to know about its dependent property (IntSum)
@@ -238,7 +238,7 @@ namespace Demo
         }
     }
 
-    public class RandomIntGenerator : NotifyPropertyChangedBase
+    public class RandomIntGenerator : NotifyPropertyChangedBaseDebug
     {
         private int myInt;
         public int Int
