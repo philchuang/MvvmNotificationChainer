@@ -11,7 +11,7 @@ using Microsoft.Practices.Prism.Commands;
 
 namespace Demo3
 {
-    public class MainWindowViewModel : NotifyPropertyChangedBase
+    public class MainWindowViewModel : NotifyPropertyChangedBaseDebug
     {
         private Manager myManager1;
         public Manager Manager1
