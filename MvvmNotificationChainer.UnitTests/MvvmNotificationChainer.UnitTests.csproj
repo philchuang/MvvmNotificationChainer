@@ -53,12 +53,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Demo\Utils\NotifyPropertyChangedBase.cs">
+      <Link>NotifyPropertyChangedBase.cs</Link>
+    </Compile>
     <Compile Include="..\MvvmNotificationChainer\Extensions.cs">
       <Link>Extensions.cs</Link>
     </Compile>
+    <Compile Include="when_testing_2deep_property_dependency_chain.cs" />
     <Compile Include="MvvmNotificationChainer_UnitTests_Base.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="when_using_ChainedNotificationDefinition.cs" />
+    <Compile Include="when_using_INotifyPropertyChanged.cs" />
+    <Compile Include="when_testing_simple_property_dependency_chain.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MvvmNotificationChainer\MvvmNotificationChainer.csproj">
