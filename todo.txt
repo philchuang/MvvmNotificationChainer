@@ -1,2 +1,10 @@
+* integration tests
+	* 3 deep chain
+	* 4 deep chain
+	* INotifyCollectionChanged
 * unit tests
-* handle INotifyCollectionChanged
+	* notification chain
+	* manager
+* v1.1
+	* handle INotifyCollectionChanged
+	* NotificationChainPropertyAttribute - can call myNotificationChainManager.Initialize (this) to call each property decorated with that attr to initialize the chain
