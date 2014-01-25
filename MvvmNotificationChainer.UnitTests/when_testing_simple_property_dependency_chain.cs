@@ -61,8 +61,8 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
-    public class when_not_using_NotificationChain_and_testing_simple_chain : 
-        when_testing_simple_property_dependency_chain<when_not_using_NotificationChain_and_testing_simple_chain.ViewModel>
+    public class when_not_using_MvvmNotificationChainer_and_testing_simple_chain : 
+        when_testing_simple_property_dependency_chain<when_not_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
     {
         public class ViewModel : NotifyPropertyChangedBase, IViewModel
         {
@@ -101,8 +101,8 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
-    public class when_using_NotificationChain_and_testing_simple_chain :
-        when_testing_simple_property_dependency_chain<when_using_NotificationChain_and_testing_simple_chain.ViewModel>
+    public class when_using_MvvmNotificationChainer_and_testing_simple_chain :
+        when_testing_simple_property_dependency_chain<when_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
     {
         public class ViewModel : NotifyPropertyChangedBase, IViewModel
         {

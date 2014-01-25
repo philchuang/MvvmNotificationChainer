@@ -108,12 +108,12 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
-    public class when_not_using_NotificationChain_and_testing_2deep_chain :
+    public class when_not_using_MvvmNotificationChainer_and_testing_2deep_chain :
         when_testing_2deep_property_dependency_chain<
-            when_not_using_NotificationChain_and_testing_2deep_chain.ViewModel,
-            when_not_using_NotificationChain_and_testing_2deep_chain.LineItem>
+            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain.ViewModel,
+            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain.LineItem>
     {
-        public class LineItem : when_not_using_NotificationChain_and_testing_simple_chain.ViewModel, ILineItem
+        public class LineItem : when_not_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel, ILineItem
         {
         }
 
@@ -224,12 +224,12 @@ namespace MvvmNotificationChainer.UnitTests
 
     }
 
-    public class when_using_NotificationChain_and_testing_2deep_chain :
+    public class when_using_MvvmNotificationChainer_and_testing_2deep_chain :
         when_testing_2deep_property_dependency_chain<
-            when_using_NotificationChain_and_testing_2deep_chain.ViewModel,
-            when_using_NotificationChain_and_testing_2deep_chain.LineItem>
+            when_using_MvvmNotificationChainer_and_testing_2deep_chain.ViewModel,
+            when_using_MvvmNotificationChainer_and_testing_2deep_chain.LineItem>
     {
-        public class LineItem : when_using_NotificationChain_and_testing_simple_chain.ViewModel, ILineItem
+        public class LineItem : when_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel, ILineItem
         {
         }
 
