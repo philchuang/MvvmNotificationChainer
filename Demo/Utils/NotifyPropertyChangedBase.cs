@@ -10,7 +10,8 @@ using Com.PhilChuang.Utils.MvvmNotificationChainer;
 
 namespace Demo.Utils
 {
-    public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged, IDisposable
+    public abstract class NotifyPropertyChangedBase<TSelf> : INotifyPropertyChanged, IDisposable
+        where TSelf : NotifyPropertyChangedBase<TSelf>
     {
         public virtual event PropertyChangedEventHandler PropertyChanged = delegate { }; 
         protected virtual event PropertyChangedEventHandler PropertyChangedInternal = delegate { };
@@ -49,7 +50,8 @@ namespace Demo.Utils
             }
         }
 
-        protected readonly NotificationChainManager myNotificationChainManager = new NotificationChainManager ();
+        // TODO is there a way to link this to the final type?
+        protected readonly NotificationChainManager<TSelf> myNotificationChainManager = new NotificationChainManager<TSelf> ();
 
         protected NotifyPropertyChangedBase ()
         {
@@ -63,7 +65,8 @@ namespace Demo.Utils
         }
     }
 
-    public abstract class NotifyPropertyChangedBaseDebug : NotifyPropertyChangedBase
+    public abstract class NotifyPropertyChangedBaseDebug<TSelf> : NotifyPropertyChangedBase<TSelf>
+        where TSelf : NotifyPropertyChangedBase<TSelf>
     {
         private event PropertyChangedEventHandler _PropertyChanged = delegate { }; 
         public override event PropertyChangedEventHandler PropertyChanged

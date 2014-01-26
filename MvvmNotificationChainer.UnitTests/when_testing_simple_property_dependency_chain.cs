@@ -64,7 +64,7 @@ namespace MvvmNotificationChainer.UnitTests
     public class when_not_using_MvvmNotificationChainer_and_testing_simple_chain : 
         when_testing_simple_property_dependency_chain<when_not_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
     {
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
+        public class ViewModel : NotifyPropertyChangedBase<ViewModel>, IViewModel
         {
             private int myQuantity;
             public int Quantity
@@ -104,7 +104,7 @@ namespace MvvmNotificationChainer.UnitTests
     public class when_using_MvvmNotificationChainer_and_testing_simple_chain :
         when_testing_simple_property_dependency_chain<when_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
     {
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
+        public class ViewModel : NotifyPropertyChangedBase<ViewModel>, IViewModel
         {
             private int myQuantity;
             public int Quantity

@@ -11,7 +11,7 @@ using Microsoft.Practices.Prism.Commands;
 
 namespace Demo2
 {
-    public class MainWindowViewModel : NotifyPropertyChangedBaseDebug
+    public class MainWindowViewModel : NotifyPropertyChangedBaseDebug<MainWindowViewModel>
     {
         private LineItem myLineItem1;
         public LineItem LineItem1
@@ -162,7 +162,7 @@ namespace Demo2
         }
     }
 
-    public class LineItem : NotifyPropertyChangedBase
+    public class LineItem : NotifyPropertyChangedBase<LineItem>
     {
         private int myQuantity;
         public int Quantity

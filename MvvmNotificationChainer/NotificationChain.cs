@@ -16,7 +16,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// The Manager that publishes to this chain.
         /// </summary>
-        public NotificationChainManager ParentManager { get; set; }
+        public INotificationChainManager ParentManager { get; set; }
 
         /// <summary>
         /// Name of the property that depends on other properties (e.g. Cost depends on Quantity and Price)
@@ -46,7 +46,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         /// <param name="parentManager"></param>
         /// <param name="dependentPropertyName">Name of the depending property</param>
-        public NotificationChain (NotificationChainManager parentManager, String dependentPropertyName)
+        public NotificationChain (INotificationChainManager parentManager, String dependentPropertyName)
         {
             parentManager.ThrowIfNull ("parentManager");
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
@@ -238,7 +238,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ParentManager.CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .On (prop2Getter)
@@ -272,7 +272,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ((INotificationChainManager<T0>) ParentManager).CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .On (prop2Getter)
@@ -309,7 +309,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ParentManager.CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter)
@@ -348,7 +348,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ((INotificationChainManager<T0>) ParentManager).CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter)
@@ -390,7 +390,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ParentManager.CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter)
@@ -434,7 +434,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             On (prop1Getter);
 
-            var mgr = ParentManager.CreateOrGetDeepManager (prop1Getter);
+            var mgr = ((INotificationChainManager<T0>) ParentManager).CreateOrGetManager (prop1Getter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);

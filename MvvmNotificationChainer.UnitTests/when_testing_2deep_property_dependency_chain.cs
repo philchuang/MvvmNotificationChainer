@@ -117,7 +117,7 @@ namespace MvvmNotificationChainer.UnitTests
         {
         }
 
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
+        public class ViewModel : NotifyPropertyChangedBase<ViewModel>, IViewModel
         {
             private ILineItem myLineItem1;
             public ILineItem LineItem1
@@ -233,7 +233,7 @@ namespace MvvmNotificationChainer.UnitTests
         {
         }
 
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
+        public class ViewModel : NotifyPropertyChangedBase<ViewModel>, IViewModel
         {
             private ILineItem myLineItem1;
             public ILineItem LineItem1

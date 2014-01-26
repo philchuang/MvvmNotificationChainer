@@ -11,21 +11,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// Prevents duplication of NotificationChains by dependent property name.
     /// When disposing, calls Dispose on all NotificationChains.
     /// </summary>
-    public class NotificationChainManager : INotificationChainManager
+    public class NotificationChainManager<T> : INotificationChainManager<T>
+        where T : class
     {
-        public Object ObservedObject { get; private set; }
+        public Object ObservedObject { get { return Observed; } }
+
+        public T Observed { get; private set; }
 
         public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Map of dependent property name to notification chain manager
         /// </summary>
-        private Dictionary<String, NotificationChainManager> myDeepChainManagers = new Dictionary<String, NotificationChainManager> ();
+        private Dictionary<String, INotificationChainManager> myDeepChainManagers = new Dictionary<String, INotificationChainManager> ();
 
         /// <summary>
         /// Map of dependent property name to function to get that property value
         /// </summary>
-        private Dictionary<String, Func<Object, Object>> myDeepChainGetters = new Dictionary<String, Func<Object, Object>> ();
+        private Dictionary<String, Func<T, Object>> myDeepChainGetters = new Dictionary<String, Func<T, Object>> ();
 
         /// <summary>
         /// Map of dependent property name to notification chain
@@ -48,10 +51,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         public NotificationChainManager (INotifyPropertyChanged notifyingObject) : this ()
         {
+            notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
+            if (!(notifyingObject is T))
+                throw new ArgumentException ("Expected type {0}, got {1}".FormatWith (typeof (T).Name, notifyingObject.GetType ().Name));
+
             Observe (notifyingObject);
         }
 
-        public NotificationChainManager (Object notifyingObject,
+        public NotificationChainManager (T notifyingObject,
                                          Action<PropertyChangedEventHandler> addEventAction,
                                          Action<PropertyChangedEventHandler> removeEventAction) : this ()
         {
@@ -62,7 +69,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             if (IsDisposed) return;
 
-            ObservedObject = null;
+            Observed = null;
 
             myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
             myRemovePropertyChangedEventHandler = null;
@@ -108,7 +115,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myDefaultCallbacks.Add (onNotifyingPropertyChanged);
         }
 
-        public NotificationChain CreateOrGet<T> (Expression<Func<T>> propGetter)
+        public NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter)
         {
             propGetter.ThrowIfNull ("propGetter");
 
@@ -137,32 +144,35 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter
 
-        internal NotificationChainManager CreateOrGetDeepManager<T1> (Expression<Func<T1>> propGetter)
+        public INotificationChainManager<T1> CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+            where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            NotificationChainManager mgr;
+            INotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
-                mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
+                myDeepChainManagers[propName] = mgr = new NotificationChainManager<T1> ();
                 myDeepChainGetters[propName] = _ => propGetter.Compile ().Invoke ();
             }
 
-            return mgr;
+            return (INotificationChainManager<T1>) mgr;
         }
 
-        internal NotificationChainManager CreateOrGetDeepManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+        public INotificationChainManager<T1> CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+            where T0 : T
+            where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            NotificationChainManager mgr;
+            INotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
-                mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
+                mgr = myDeepChainManagers[propName] = new NotificationChainManager<T1> ();
                 myDeepChainGetters[propName] = parent => propGetter.Compile ().Invoke ((T0) parent);
             }
 
-            return mgr;
+            return (INotificationChainManager<T1>) mgr;
         }
 
         public NotificationChain Get ([CallerMemberName] String dependentPropertyName = null)
@@ -188,13 +198,30 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myChains.Remove (dependentPropertyName);
         }
 
+        public void Observe<T0> (T0 notifyingObject)
+            where T0 : T, INotifyPropertyChanged
+        {
+            notifyingObject.ThrowIfNull ("notifyingObject");
+
+            Observe ((INotifyPropertyChanged) notifyingObject);
+        }
+
         public void Observe (INotifyPropertyChanged notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
+            if (!(notifyingObject is T))
+                throw new ArgumentException ("Expected type {0}, got {1}".FormatWith (typeof (T).Name, notifyingObject.GetType ().Name));
 
             if (IsDisposed) return;
 
             Observe (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h);
+        }
+
+        public void Observe (T notifyingObject,
+                             Action<PropertyChangedEventHandler> addEventAction,
+                             Action<PropertyChangedEventHandler> removeEventAction)
+        {
+            Observe ((Object) notifyingObject, addEventAction, removeEventAction);
         }
 
         public void Observe (Object notifyingObject,
@@ -202,6 +229,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                              Action<PropertyChangedEventHandler> removeEventAction)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
+            addEventAction.ThrowIfNull ("addEventAction");
+            removeEventAction.ThrowIfNull ("removeEventAction");
 
             if (IsDisposed) return;
 
@@ -224,12 +253,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             {
                 myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
                 myRemovePropertyChangedEventHandler = null;
-                ObservedObject = null;
+                Observed = null;
             }
         }
 
         public void Publish (Object sender, PropertyChangedEventArgs args)
         {
+            sender.ThrowIfNull ("sender");
+
+            if (!(sender is T))
+                throw new ArgumentException ("Expected sender to be {0}, got {1}".FormatWith (typeof (T).Name, sender.GetType ().Name));
+
+            Publish ((T) sender, args);
+        }
+
+        public void Publish (T sender, PropertyChangedEventArgs args)
+        {
+            sender.ThrowIfNull ("sender");
+
             if (IsDisposed) return;
 
             lock (lock_Publish)
@@ -237,7 +278,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 foreach (var chain in myChains.Values)
                     chain.Publish (sender, args);
 
-                NotificationChainManager manager;
+                INotificationChainManager manager;
                 if (myDeepChainManagers.TryGetValue (args.PropertyName, out manager))
                 {
                     var currentPropertyValue = (INotifyPropertyChanged) myDeepChainGetters[args.PropertyName] (sender);

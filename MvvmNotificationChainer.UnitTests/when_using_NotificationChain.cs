@@ -12,7 +12,7 @@ namespace MvvmNotificationChainer.UnitTests
 {
     public abstract class when_using_NotificationChain : MvvmNotificationChainer_UnitTests_Base
     {
-        protected NotificationChainManager myManager;
+        protected NotificationChainManager<Object> myManager;
         protected NotificationChain myChain;
 
         protected virtual String DependentPropertyName { get { return "DependentPropertyName"; } }
@@ -23,7 +23,7 @@ namespace MvvmNotificationChainer.UnitTests
 
             m_IsBecauseOfExceptionExpected = false;
             
-            myManager = new NotificationChainManager();
+            myManager = new NotificationChainManager<Object> ();
             myChain = new NotificationChain (myManager, DependentPropertyName);
         }
     }
