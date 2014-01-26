@@ -23,7 +23,7 @@ namespace MvvmNotificationChainer.UnitTests
 
             m_IsBecauseOfExceptionExpected = false;
             
-            myManager = new NotificationChainManager();
+            myManager = new NotificationChainManager ();
             myChain = new NotificationChain (myManager, DependentPropertyName);
         }
     }

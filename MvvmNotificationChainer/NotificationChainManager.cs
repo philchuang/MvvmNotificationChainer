@@ -20,7 +20,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Map of dependent property name to notification chain manager
         /// </summary>
-        private Dictionary<String, NotificationChainManager> myDeepChainManagers = new Dictionary<String, NotificationChainManager> ();
+        private Dictionary<String, INotificationChainManager> myDeepChainManagers = new Dictionary<String, INotificationChainManager> ();
 
         /// <summary>
         /// Map of dependent property name to function to get that property value
@@ -48,6 +48,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         public NotificationChainManager (INotifyPropertyChanged notifyingObject) : this ()
         {
+            notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
+
             Observe (notifyingObject);
         }
 
@@ -108,7 +110,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myDefaultCallbacks.Add (onNotifyingPropertyChanged);
         }
 
-        public NotificationChain CreateOrGet<T> (Expression<Func<T>> propGetter)
+        public NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter)
         {
             propGetter.ThrowIfNull ("propGetter");
 
@@ -137,25 +139,28 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter
 
-        internal NotificationChainManager CreateOrGetDeepManager<T1> (Expression<Func<T1>> propGetter)
+        public INotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+            where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            NotificationChainManager mgr;
+            INotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
-                mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
+                myDeepChainManagers[propName] = mgr = new NotificationChainManager ();
                 myDeepChainGetters[propName] = _ => propGetter.Compile ().Invoke ();
             }
 
             return mgr;
         }
 
-        internal NotificationChainManager CreateOrGetDeepManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+        public INotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+            where T0 : INotifyPropertyChanged
+            where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            NotificationChainManager mgr;
+            INotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
                 mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
@@ -202,6 +207,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                              Action<PropertyChangedEventHandler> removeEventAction)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
+            addEventAction.ThrowIfNull ("addEventAction");
+            removeEventAction.ThrowIfNull ("removeEventAction");
 
             if (IsDisposed) return;
 
@@ -230,6 +237,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         public void Publish (Object sender, PropertyChangedEventArgs args)
         {
+            sender.ThrowIfNull ("sender");
+
             if (IsDisposed) return;
 
             lock (lock_Publish)
@@ -237,7 +246,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 foreach (var chain in myChains.Values)
                     chain.Publish (sender, args);
 
-                NotificationChainManager manager;
+                INotificationChainManager manager;
                 if (myDeepChainManagers.TryGetValue (args.PropertyName, out manager))
                 {
                     var currentPropertyValue = (INotifyPropertyChanged) myDeepChainGetters[args.PropertyName] (sender);

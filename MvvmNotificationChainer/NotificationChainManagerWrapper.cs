@@ -9,10 +9,11 @@ using System.Text;
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
     public class NotificationChainManagerWrapper<T> : INotificationChainManager
+        where T : class
     {
-        public object ObservedObject { get { return Manager != null ? Manager.ObservedObject : null; } }
+        public Object ObservedObject { get { return Manager != null ? Manager.ObservedObject : null; } }
 
-        public T Wrapped { get { return Manager != null ? (T) Manager.ObservedObject : default(T); } }
+        public T Observed { get { return (T) ObservedObject; } }
 
         public bool IsDisposed { get; private set; }
 
@@ -20,16 +21,20 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         public NotificationChainManagerWrapper ()
         {
-            Manager = new NotificationChainManager();
+            Manager = new NotificationChainManager ();
         }
 
         public NotificationChainManagerWrapper (INotifyPropertyChanged notifyingObject) : this ()
         {
+            notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
+            if (!(notifyingObject is T))
+                throw new ArgumentException ("Expected type {0}, got {1}".FormatWith (typeof (T).Name, notifyingObject.GetType ().Name));
+
             Observe (notifyingObject);
         }
 
         public NotificationChainManagerWrapper (
-            Object notifyingObject,
+            T notifyingObject,
             Action<PropertyChangedEventHandler> addEventAction,
             Action<PropertyChangedEventHandler> removeEventAction) : this ()
         {
@@ -47,37 +52,121 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         public void AddDefaultCall (Action onNotifyingPropertyChanged)
-        { Manager.AddDefaultCall (onNotifyingPropertyChanged); }
+        {
+            if (IsDisposed) return;
+
+            Manager.AddDefaultCall (onNotifyingPropertyChanged);
+        }
 
         public void AddDefaultCall (NotificationChainCallback onNotifyingPropertyChanged)
-        { Manager.AddDefaultCall (onNotifyingPropertyChanged); }
+        {
+            if (IsDisposed) return;
+
+            Manager.AddDefaultCall (onNotifyingPropertyChanged);
+        }
 
         public NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter)
-        { return Manager.CreateOrGet (propGetter); }
+        {
+            if (IsDisposed) throw new ObjectDisposedException ("Manager");
+
+            return Manager.CreateOrGet (propGetter);
+        }
 
         public NotificationChain CreateOrGet ([CallerMemberName] string dependentPropertyName = null)
-        { return Manager.CreateOrGet (dependentPropertyName); }
+        {
+            if (IsDisposed) throw new ObjectDisposedException ("Manager");
+
+            return Manager.CreateOrGet (dependentPropertyName);
+        }
+
+        public INotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+            where T1 : class
+        {
+            if (IsDisposed) throw new ObjectDisposedException ("Manager");
+
+            return Manager.CreateOrGetManager (propGetter);
+        }
+
+        public INotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+            where T0 : INotifyPropertyChanged
+            where T1 : class
+        {
+            if (IsDisposed) throw new ObjectDisposedException ("Manager");
+
+            return Manager.CreateOrGetManager (propGetter);
+        }
+
 
         public NotificationChain Get ([CallerMemberName] string dependentPropertyName = null)
-        { return Manager.Get (dependentPropertyName); }
+        {
+            if (IsDisposed) throw new ObjectDisposedException ("Manager");
+
+            return Manager.Get (dependentPropertyName);
+        }
 
         public void Clear ([CallerMemberName] string dependentPropertyName = null)
-        { Manager.Clear (dependentPropertyName); }
+        {
+            if (IsDisposed) return;
 
-        public void Observe<TInpc> (TInpc notifyingObject)
-            where TInpc : T, INotifyPropertyChanged
-        { Observe ((INotifyPropertyChanged) notifyingObject); }
+            Manager.Clear (dependentPropertyName);
+        }
+
+        public void Observe<T0> (T0 notifyingObject)
+            where T0 : T, INotifyPropertyChanged
+        {
+            notifyingObject.ThrowIfNull ("notifyingObject");
+
+            if (IsDisposed) return;
+
+            Observe ((INotifyPropertyChanged) notifyingObject);
+        }
 
         public void Observe (INotifyPropertyChanged notifyingObject)
-        { Manager.Observe (notifyingObject); }
+        {
+            notifyingObject.ThrowIfNull ("notifyingObject");
+            if (!(notifyingObject is T))
+                throw new ArgumentException ("Expected type {0}, got {1}".FormatWith (typeof (T).Name, notifyingObject.GetType ().Name));
+
+            if (IsDisposed) return;
+            
+            Manager.Observe (notifyingObject);
+        }
+
+        public void Observe (T notifyingObject,
+                             Action<PropertyChangedEventHandler> addEventAction,
+                             Action<PropertyChangedEventHandler> removeEventAction)
+        {
+            if (IsDisposed) return;
+
+            Observe ((Object) notifyingObject, addEventAction, removeEventAction);
+        }
 
         public void Observe (object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction)
-        { Manager.Observe (notifyingObject, addEventAction, removeEventAction); }
+        {
+            if (IsDisposed) return;
+
+            Manager.Observe (notifyingObject, addEventAction, removeEventAction);
+        }
 
         public void StopObserving ()
-        { Manager.StopObserving(); }
+        {
+            if (IsDisposed) return;
+
+            Manager.StopObserving ();
+        }
 
         public void Publish (object sender, PropertyChangedEventArgs args)
-        { Manager.Publish (sender, args); }
+        {
+            if (IsDisposed) return;
+
+            Manager.Publish (sender, args);
+        }
+
+        public void Publish (T sender, PropertyChangedEventArgs args)
+        {
+            if (IsDisposed) return;
+
+            Manager.Publish (sender, args);
+        }
     }
 }

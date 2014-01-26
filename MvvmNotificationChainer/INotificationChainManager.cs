@@ -35,7 +35,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         /// <param name="propGetter">Lambda expression for the property that depends on other properties</param>
         /// <returns></returns>
-        NotificationChain CreateOrGet<T> (Expression<Func<T>> propGetter);
+        NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter);
 
         /// <summary>
         /// Creates a new NotificationChain for the calling property, or returns an existing instance
@@ -43,6 +43,26 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
         /// <returns></returns>
         NotificationChain CreateOrGet ([CallerMemberName] String dependentPropertyName = null);
+
+        /// <summary>
+        /// Creates a new NotificationChainManager for the calling property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="propGetter"></param>
+        /// <returns></returns>
+        INotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+            where T1 : class;
+
+        /// <summary>
+        /// Creates a new NotificationChainManager for the calling property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T0"></typeparam>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="propGetter"></param>
+        /// <returns></returns>
+        INotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+            where T0 : INotifyPropertyChanged
+            where T1 : class;
 
         /// <summary>
         /// Creates a new NotificationChain for the calling property
