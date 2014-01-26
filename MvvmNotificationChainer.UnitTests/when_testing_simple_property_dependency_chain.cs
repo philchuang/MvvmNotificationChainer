@@ -11,26 +11,8 @@ using JetBrains.Annotations;
 namespace MvvmNotificationChainer.UnitTests
 {
     public abstract class when_testing_simple_property_dependency_chain<TViewModel> : when_using_INotifyPropertyChanged
-        where TViewModel : when_testing_simple_property_dependency_chain<TViewModel>.IViewModel
+        where TViewModel : when_testing_simple_property_dependency_chain_IViewModel
     {
-        public interface IViewModel : INotifyPropertyChanged
-        {
-            /// <summary>
-            /// Source property, item quantity
-            /// </summary>
-            int Quantity { get; set; }
-
-            /// <summary>
-            /// Source property, individual item price
-            /// </summary>
-            decimal Price { get; set; }
-
-            /// <summary>
-            /// Derived property, item quantity * individual item price
-            /// </summary>
-            decimal Cost { get; }
-        }
-
         protected TViewModel myViewModel;
 
         protected override void Establish_context ()
@@ -61,39 +43,27 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
-    public class when_not_using_MvvmNotificationChainer_and_testing_simple_chain : 
-        when_testing_simple_property_dependency_chain<when_not_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
+    public interface when_testing_simple_property_dependency_chain_IViewModel : INotifyPropertyChanged
     {
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
-        {
-            private int myQuantity;
-            public int Quantity
-            {
-                get { return myQuantity; }
-                set
-                {
-                    myQuantity = value;
-                    RaisePropertyChanged ();
-                    RaisePropertyChanged (() => Cost);
-                }
-            }
+        /// <summary>
+        /// Source property, item quantity
+        /// </summary>
+        int Quantity { get; set; }
 
-            private decimal myPrice;
-            public decimal Price
-            {
-                get { return myPrice; }
-                set
-                {
-                    myPrice = value;
-                    RaisePropertyChanged ();
-                    RaisePropertyChanged (() => Cost);
-                }
-            }
+        /// <summary>
+        /// Source property, individual item price
+        /// </summary>
+        decimal Price { get; set; }
 
-            public decimal Cost
-            { get { return Quantity * Price; } }
-        }
+        /// <summary>
+        /// Derived property, item quantity * individual item price
+        /// </summary>
+        decimal Cost { get; }
+    }
 
+    public class when_not_using_MvvmNotificationChainer_and_testing_simple_chain : 
+        when_testing_simple_property_dependency_chain<when_not_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel>
+    {
         protected override void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "PropertyChangedOutput") return;
@@ -101,47 +71,39 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
-    public class when_using_MvvmNotificationChainer_and_testing_simple_chain :
-        when_testing_simple_property_dependency_chain<when_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel>
+    public class when_not_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel : NotifyPropertyChangedBase, when_testing_simple_property_dependency_chain_IViewModel
     {
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
+        private int myQuantity;
+        public int Quantity
         {
-            private int myQuantity;
-            public int Quantity
+            get { return myQuantity; }
+            set
             {
-                get { return myQuantity; }
-                set
-                {
-                    myQuantity = value;
-                    RaisePropertyChanged ();
-                }
-            }
-
-            private decimal myPrice;
-            public decimal Price
-            {
-                get { return myPrice; }
-                set
-                {
-                    myPrice = value;
-                    RaisePropertyChanged ();
-                }
-            }
-
-            public virtual decimal Cost
-            {
-                get
-                {
-                    myNotificationChainManager.CreateOrGet ()
-                                              .Configure (cn => cn.On (() => Quantity)
-                                                                  .On (() => Price)
-                                                                  .Finish ());
-
-                    return Quantity * Price;
-                }
+                myQuantity = value;
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => Cost);
             }
         }
 
+        private decimal myPrice;
+        public decimal Price
+        {
+            get { return myPrice; }
+            set
+            {
+                myPrice = value;
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => Cost);
+            }
+        }
+
+        public decimal Cost
+        { get { return Quantity * Price; } }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_testing_simple_chain :
+        when_testing_simple_property_dependency_chain<when_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel>
+    {
         protected override void Because_of ()
         {
             try
@@ -160,6 +122,44 @@ namespace MvvmNotificationChainer.UnitTests
         {
             if (e.PropertyName == "PropertyChangedOutput") return;
             base.OnPropertyChanged (sender, e);
+        }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel : NotifyPropertyChangedBase, when_testing_simple_property_dependency_chain_IViewModel
+    {
+        private int myQuantity;
+        public int Quantity
+        {
+            get { return myQuantity; }
+            set
+            {
+                myQuantity = value;
+                RaisePropertyChanged ();
+            }
+        }
+
+        private decimal myPrice;
+        public decimal Price
+        {
+            get { return myPrice; }
+            set
+            {
+                myPrice = value;
+                RaisePropertyChanged ();
+            }
+        }
+
+        public virtual decimal Cost
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.On (() => Quantity)
+                                                              .On (() => Price)
+                                                              .Finish ());
+
+                return Quantity * Price;
+            }
         }
     }
 }

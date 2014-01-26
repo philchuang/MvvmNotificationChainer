@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -438,6 +440,34 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
                .DeepOn (topLevelCallback, prop2Getter, prop3Getter, prop4Getter);
+
+            return this;
+        }
+
+        public NotificationChain OnCollection<T0, T1> (Expression<Func<T0>> collectionPropGetter)
+            where T0 : Collection<T1>, INotifyCollectionChanged
+        {
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+
+            On (collectionPropGetter);
+
+            // TODO create deep notification manager, add handling for collections to manager
+
+            throw new NotImplementedException ();
+
+            return this;
+        }
+
+        public NotificationChain OnCollection<T0, T1, T2> (Expression<Func<T0>> collectionPropGetter, Expression<Func<T1, T2>> prop1Getter)
+            where T0 : Collection<T1>, INotifyCollectionChanged
+        {
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+
+            // TODO create deep notification manager, add handling for collections to manager
+            // TODO regular deep chain from there
+
+            throw new NotImplementedException ();
 
             return this;
         }

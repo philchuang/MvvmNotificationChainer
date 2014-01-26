@@ -14,38 +14,9 @@ using NUnit.Framework;
 namespace MvvmNotificationChainer.UnitTests
 {
     public abstract class when_testing_2deep_property_dependency_chain<TViewModel, TLineItem> : when_using_INotifyPropertyChanged
-        where TViewModel : when_testing_2deep_property_dependency_chain<TViewModel, TLineItem>.IViewModel
-        where TLineItem : when_testing_2deep_property_dependency_chain<TViewModel, TLineItem>.ILineItem
+        where TViewModel : when_testing_2deep_property_dependency_chain_IViewModel
+        where TLineItem : when_testing_2deep_property_dependency_chain_ILineItem
     {
-        public interface ILineItem : INotifyPropertyChanged
-        {
-            /// <summary>
-            /// Source property, item quantity
-            /// </summary>
-            int Quantity { get; set; }
-
-            /// <summary>
-            /// Source property, individual item price
-            /// </summary>
-            decimal Price { get; set; }
-
-            /// <summary>
-            /// Derived property, item quantity * individual item price
-            /// </summary>
-            decimal Cost { get; }
-        }
-
-        public interface IViewModel : INotifyPropertyChanged
-        {
-            ILineItem LineItem1 { get; set; }
-            ILineItem LineItem2 { get; set; }
-            ILineItem LineItem3 { get; set; }
-
-            int TotalLineItems { get; }
-            int TotalItemQuantity { get; }
-            decimal TotalCost { get; }
-        }
-
         protected TViewModel myViewModel;
 
         protected override void Establish_context ()
@@ -108,226 +79,155 @@ namespace MvvmNotificationChainer.UnitTests
         }
     }
 
+    public interface when_testing_2deep_property_dependency_chain_IViewModel : INotifyPropertyChanged
+    {
+        when_testing_2deep_property_dependency_chain_ILineItem LineItem1 { get; set; }
+        when_testing_2deep_property_dependency_chain_ILineItem LineItem2 { get; set; }
+        when_testing_2deep_property_dependency_chain_ILineItem LineItem3 { get; set; }
+
+        int TotalLineItems { get; }
+        int TotalItemQuantity { get; }
+        decimal TotalCost { get; }
+    }
+
+    public interface when_testing_2deep_property_dependency_chain_ILineItem : INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Source property, item quantity
+        /// </summary>
+        int Quantity { get; set; }
+
+        /// <summary>
+        /// Source property, individual item price
+        /// </summary>
+        decimal Price { get; set; }
+
+        /// <summary>
+        /// Derived property, item quantity * individual item price
+        /// </summary>
+        decimal Cost { get; }
+    }
+
     public class when_not_using_MvvmNotificationChainer_and_testing_2deep_chain :
         when_testing_2deep_property_dependency_chain<
-            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain.ViewModel,
-            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain.LineItem>
+            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_ViewModel,
+            when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem>
     {
-        public class LineItem : when_not_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel, ILineItem
-        {
-        }
-
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
-        {
-            private ILineItem myLineItem1;
-            public ILineItem LineItem1
-            {
-                get { return myLineItem1; }
-                set
-                {
-                    if (myLineItem1 != null && !ReferenceEquals (myLineItem1, value))
-                        LineItem1.PropertyChanged -= OnLineItemPropertyChanged;
-                    myLineItem1 = value;
-                    if (myLineItem1 != null)
-                        LineItem1.PropertyChanged += OnLineItemPropertyChanged;
-                    RaisePropertyChanged ();
-                    RaisePropertyChanged (() => TotalLineItems);
-                    RaisePropertyChanged (() => TotalItemQuantity);
-                    RaisePropertyChanged (() => TotalCost);
-                }
-            }
-
-            private ILineItem myLineItem2;
-            public ILineItem LineItem2
-            {
-                get { return myLineItem2; }
-                set
-                {
-                    if (myLineItem2 != null && !ReferenceEquals (myLineItem2, value))
-                        LineItem2.PropertyChanged -= OnLineItemPropertyChanged;
-                    myLineItem2 = value;
-                    if (value != null)
-                        LineItem2.PropertyChanged += OnLineItemPropertyChanged;
-                    RaisePropertyChanged ();
-                    RaisePropertyChanged (() => TotalLineItems);
-                    RaisePropertyChanged (() => TotalItemQuantity);
-                    RaisePropertyChanged (() => TotalCost);
-                }
-            }
-
-            private ILineItem myLineItem3;
-            public ILineItem LineItem3
-            {
-                get { return myLineItem3; }
-                set
-                {
-                    if (myLineItem3 != null && !ReferenceEquals (myLineItem3, value))
-                        LineItem3.PropertyChanged -= OnLineItemPropertyChanged;
-                    myLineItem3 = value;
-                    if (value != null)
-                        LineItem3.PropertyChanged += OnLineItemPropertyChanged;
-                    RaisePropertyChanged ();
-                    RaisePropertyChanged (() => TotalLineItems);
-                    RaisePropertyChanged (() => TotalItemQuantity);
-                    RaisePropertyChanged (() => TotalCost);
-                }
-            }
-
-            private void OnLineItemPropertyChanged (object sender, PropertyChangedEventArgs e)
-            {
-                if (e.PropertyName == "Quantity")
-                {
-                    RaisePropertyChanged (() => TotalItemQuantity);
-                }
-                else if (e.PropertyName == "Cost")
-                {
-                    RaisePropertyChanged (() => TotalCost);
-                }
-            }
-
-            public int TotalLineItems
-            {
-                get
-                {
-                    return (LineItem1 != null ? 1 : 0)
-                           + (LineItem2 != null ? 1 : 0)
-                           + (LineItem3 != null ? 1 : 0);
-                }
-            }
-
-            public int TotalItemQuantity
-            {
-                get
-                {
-                    return (LineItem1 != null ? LineItem1.Quantity : 0)
-                           + (LineItem2 != null ? LineItem2.Quantity : 0)
-                           + (LineItem3 != null ? LineItem3.Quantity : 0);
-                }
-            }
-
-            public decimal TotalCost
-            {
-                get
-                {
-                    return (LineItem1 != null ? LineItem1.Cost : 0)
-                           + (LineItem2 != null ? LineItem2.Cost : 0)
-                           + (LineItem3 != null ? LineItem3.Cost : 0);
-                }
-            }
-        }
-
         protected override void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "PropertyChangedOutput") return;
             base.OnPropertyChanged (sender, e);
         }
+    }
 
+    public class when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_ViewModel : NotifyPropertyChangedBase, when_testing_2deep_property_dependency_chain_IViewModel
+    {
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem1;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem1
+        {
+            get { return myLineItem1; }
+            set
+            {
+                if (myLineItem1 != null && !ReferenceEquals (myLineItem1, value))
+                    LineItem1.PropertyChanged -= OnLineItemPropertyChanged;
+                myLineItem1 = value;
+                if (myLineItem1 != null)
+                    LineItem1.PropertyChanged += OnLineItemPropertyChanged;
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => TotalLineItems);
+                RaisePropertyChanged (() => TotalItemQuantity);
+                RaisePropertyChanged (() => TotalCost);
+            }
+        }
+
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem2;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem2
+        {
+            get { return myLineItem2; }
+            set
+            {
+                if (myLineItem2 != null && !ReferenceEquals (myLineItem2, value))
+                    LineItem2.PropertyChanged -= OnLineItemPropertyChanged;
+                myLineItem2 = value;
+                if (value != null)
+                    LineItem2.PropertyChanged += OnLineItemPropertyChanged;
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => TotalLineItems);
+                RaisePropertyChanged (() => TotalItemQuantity);
+                RaisePropertyChanged (() => TotalCost);
+            }
+        }
+
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem3;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem3
+        {
+            get { return myLineItem3; }
+            set
+            {
+                if (myLineItem3 != null && !ReferenceEquals (myLineItem3, value))
+                    LineItem3.PropertyChanged -= OnLineItemPropertyChanged;
+                myLineItem3 = value;
+                if (value != null)
+                    LineItem3.PropertyChanged += OnLineItemPropertyChanged;
+                RaisePropertyChanged ();
+                RaisePropertyChanged (() => TotalLineItems);
+                RaisePropertyChanged (() => TotalItemQuantity);
+                RaisePropertyChanged (() => TotalCost);
+            }
+        }
+
+        private void OnLineItemPropertyChanged (object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Quantity")
+            {
+                RaisePropertyChanged (() => TotalItemQuantity);
+            }
+            else if (e.PropertyName == "Cost")
+            {
+                RaisePropertyChanged (() => TotalCost);
+            }
+        }
+
+        public int TotalLineItems
+        {
+            get
+            {
+                return (LineItem1 != null ? 1 : 0)
+                       + (LineItem2 != null ? 1 : 0)
+                       + (LineItem3 != null ? 1 : 0);
+            }
+        }
+
+        public int TotalItemQuantity
+        {
+            get
+            {
+                return (LineItem1 != null ? LineItem1.Quantity : 0)
+                       + (LineItem2 != null ? LineItem2.Quantity : 0)
+                       + (LineItem3 != null ? LineItem3.Quantity : 0);
+            }
+        }
+
+        public decimal TotalCost
+        {
+            get
+            {
+                return (LineItem1 != null ? LineItem1.Cost : 0)
+                       + (LineItem2 != null ? LineItem2.Cost : 0)
+                       + (LineItem3 != null ? LineItem3.Cost : 0);
+            }
+        }
+    }
+
+    public class when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem : when_not_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel, when_testing_2deep_property_dependency_chain_ILineItem
+    {
     }
 
     public class when_using_MvvmNotificationChainer_and_testing_2deep_chain :
         when_testing_2deep_property_dependency_chain<
-            when_using_MvvmNotificationChainer_and_testing_2deep_chain.ViewModel,
-            when_using_MvvmNotificationChainer_and_testing_2deep_chain.LineItem>
+            when_using_MvvmNotificationChainer_and_testing_2deep_chain_ViewModel,
+            when_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem>
     {
-        public class LineItem : when_using_MvvmNotificationChainer_and_testing_simple_chain.ViewModel, ILineItem
-        {
-        }
-
-        public class ViewModel : NotifyPropertyChangedBase, IViewModel
-        {
-            private ILineItem myLineItem1;
-            public ILineItem LineItem1
-            {
-                get { return myLineItem1; }
-                set
-                {
-                    myLineItem1 = value;
-                    InitializeLineItem (myLineItem1);
-                    RaisePropertyChanged ();
-                }
-            }
-
-            private ILineItem myLineItem2;
-            public ILineItem LineItem2
-            {
-                get { return myLineItem2; }
-                set
-                {
-                    myLineItem2 = value;
-                    InitializeLineItem (myLineItem2);
-                    RaisePropertyChanged ();
-                }
-            }
-
-            private ILineItem myLineItem3;
-            public ILineItem LineItem3
-            {
-                get { return myLineItem3; }
-                set
-                {
-                    myLineItem3 = value;
-                    InitializeLineItem (myLineItem3);
-                    RaisePropertyChanged ();
-                }
-            }
-
-            private void InitializeLineItem (ILineItem li)
-            {
-                if (li == null) return;
-
-                // In a traditional MVVM app, this won't be necessary because the databinding will call the necessary getters for us and initialize the chains
-                var cost = li.Cost;
-            }
-
-            public int TotalLineItems
-            {
-                get
-                {
-                    myNotificationChainManager.CreateOrGet ()
-                                              .Configure (cn => cn.On (() => LineItem1)
-                                                                  .On (() => LineItem2)
-                                                                  .On (() => LineItem3)
-                                                                  .Finish ());
-
-                    return (LineItem1 != null ? 1 : 0)
-                           + (LineItem2 != null ? 1 : 0)
-                           + (LineItem3 != null ? 1 : 0);
-                }
-            }
-
-            public int TotalItemQuantity
-            {
-                get
-                {
-                    myNotificationChainManager.CreateOrGet ()
-                                              .Configure (cn => cn.On (() => LineItem1, li => li.Quantity)
-                                                                  .On (() => LineItem2, li => li.Quantity)
-                                                                  .On (() => LineItem3, li => li.Quantity)
-                                                                  .Finish ());
-
-                    return (LineItem1 != null ? LineItem1.Quantity : 0)
-                           + (LineItem2 != null ? LineItem2.Quantity : 0)
-                           + (LineItem3 != null ? LineItem3.Quantity : 0);
-                }
-            }
-
-            public decimal TotalCost
-            {
-                get
-                {
-                    myNotificationChainManager.CreateOrGet ()
-                                              .Configure (cn => cn.On (() => LineItem1, li => li.Cost)
-                                                                  .On (() => LineItem2, li => li.Cost)
-                                                                  .On (() => LineItem3, li => li.Cost)
-                                                                  .Finish ());
-
-                    return (LineItem1 != null ? LineItem1.Cost : 0)
-                           + (LineItem2 != null ? LineItem2.Cost : 0)
-                           + (LineItem3 != null ? LineItem3.Cost : 0);
-                }
-            }
-        }
-
         protected override void Because_of ()
         {
             try
@@ -349,5 +249,104 @@ namespace MvvmNotificationChainer.UnitTests
             if (e.PropertyName == "PropertyChangedOutput") return;
             base.OnPropertyChanged (sender, e);
         }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_testing_2deep_chain_ViewModel : NotifyPropertyChangedBase, when_testing_2deep_property_dependency_chain_IViewModel
+    {
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem1;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem1
+        {
+            get { return myLineItem1; }
+            set
+            {
+                myLineItem1 = value;
+                InitializeLineItem (myLineItem1);
+                RaisePropertyChanged ();
+            }
+        }
+
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem2;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem2
+        {
+            get { return myLineItem2; }
+            set
+            {
+                myLineItem2 = value;
+                InitializeLineItem (myLineItem2);
+                RaisePropertyChanged ();
+            }
+        }
+
+        private when_testing_2deep_property_dependency_chain_ILineItem myLineItem3;
+        public when_testing_2deep_property_dependency_chain_ILineItem LineItem3
+        {
+            get { return myLineItem3; }
+            set
+            {
+                myLineItem3 = value;
+                InitializeLineItem (myLineItem3);
+                RaisePropertyChanged ();
+            }
+        }
+
+        private void InitializeLineItem (when_testing_2deep_property_dependency_chain_ILineItem li)
+        {
+            if (li == null) return;
+
+            // In a traditional MVVM app, this won't be necessary because the databinding will call the necessary getters for us and initialize the chains
+            var cost = li.Cost;
+        }
+
+        public int TotalLineItems
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.On (() => LineItem1)
+                                                              .On (() => LineItem2)
+                                                              .On (() => LineItem3)
+                                                              .Finish ());
+
+                return (LineItem1 != null ? 1 : 0)
+                       + (LineItem2 != null ? 1 : 0)
+                       + (LineItem3 != null ? 1 : 0);
+            }
+        }
+
+        public int TotalItemQuantity
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.On (() => LineItem1, li => li.Quantity)
+                                                              .On (() => LineItem2, li => li.Quantity)
+                                                              .On (() => LineItem3, li => li.Quantity)
+                                                              .Finish ());
+
+                return (LineItem1 != null ? LineItem1.Quantity : 0)
+                       + (LineItem2 != null ? LineItem2.Quantity : 0)
+                       + (LineItem3 != null ? LineItem3.Quantity : 0);
+            }
+        }
+
+        public decimal TotalCost
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.On (() => LineItem1, li => li.Cost)
+                                                              .On (() => LineItem2, li => li.Cost)
+                                                              .On (() => LineItem3, li => li.Cost)
+                                                              .Finish ());
+
+                return (LineItem1 != null ? LineItem1.Cost : 0)
+                       + (LineItem2 != null ? LineItem2.Cost : 0)
+                       + (LineItem3 != null ? LineItem3.Cost : 0);
+            }
+        }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem : when_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel, when_testing_2deep_property_dependency_chain_ILineItem
+    {
     }
 }
