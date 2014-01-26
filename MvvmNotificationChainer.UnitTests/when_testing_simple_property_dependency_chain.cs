@@ -128,7 +128,7 @@ namespace MvvmNotificationChainer.UnitTests
                 }
             }
 
-            public decimal Cost
+            public virtual decimal Cost
             {
                 get
                 {

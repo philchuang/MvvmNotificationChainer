@@ -65,6 +65,7 @@
     <Compile Include="when_using_INotifyPropertyChanged.cs" />
     <Compile Include="when_testing_simple_property_dependency_chain.cs" />
     <Compile Include="when_using_NotificationChain.cs" />
+    <Compile Include="when_using_NotificationChainPropertyAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MvvmNotificationChainer\MvvmNotificationChainer.csproj">

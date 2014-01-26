@@ -53,8 +53,8 @@ namespace Demo.Utils
 
         protected NotifyPropertyChangedBase ()
         {
-            myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
             myNotificationChainManager.AddDefaultCall ((sender, notifyingProperty, dependentProperty) => RaisePropertyChanged (dependentProperty));
+            myNotificationChainManager.Observe (this, h => PropertyChangedInternal += h, h => PropertyChangedInternal -= h);
         }
 
         public virtual void Dispose ()

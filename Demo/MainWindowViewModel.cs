@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Com.PhilChuang.Utils;
 using Com.PhilChuang.Utils.MvvmCommandWirer;
+using Com.PhilChuang.Utils.MvvmNotificationChainer;
 using Demo.Utils;
 using Microsoft.Practices.Prism.Commands;
 
@@ -73,6 +74,7 @@ namespace Demo
             }
         }
 
+        [NotificationChainProperty]
         public int Example2IntSum
         {
             get
@@ -111,6 +113,7 @@ namespace Demo
             }
         }
 
+        [NotificationChainProperty]
         public int Example3IntSum
         {
             get
@@ -145,6 +148,7 @@ namespace Demo
             }
         }
 
+        [NotificationChainProperty]
         public String Example4CommandText
         {
             get
@@ -183,6 +187,7 @@ namespace Demo
             }
         }
 
+        [NotificationChainProperty]
         public int Example4Int
         {
             get

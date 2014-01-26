@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Com.PhilChuang.Utils.MvvmCommandWirer;
+using Com.PhilChuang.Utils.MvvmNotificationChainer;
 using Demo.Utils;
 using Microsoft.Practices.Prism.Commands;
 
@@ -24,6 +25,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public String LineItem1CommandText
         {
             get
@@ -55,6 +57,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public String LineItem2CommandText
         {
             get
@@ -86,6 +89,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public String LineItem3CommandText
         {
             get
@@ -106,6 +110,7 @@ namespace Demo2
             LineItem3 = LineItem3 == null ? new LineItem () : null;
         }
 
+        [NotificationChainProperty]
         public decimal TotalCost
         {
             get
@@ -124,6 +129,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public int TotalQuantity
         {
             get
@@ -140,6 +146,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public int NumLineItems
         {
             get
@@ -186,6 +193,7 @@ namespace Demo2
             }
         }
 
+        [NotificationChainProperty]
         public decimal Cost
         {
             get

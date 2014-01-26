@@ -6,5 +6,4 @@
 	* notification chain manager
 * v1.1
 	* handle INotifyCollectionChanged
-	* notification chain manager should be typed
-	* NotificationChainPropertyAttribute - can call myNotificationChainManager.Observe (this) which also calls each property decorated with that attr to initialize the chain
+	* should notification chain manager be typed?

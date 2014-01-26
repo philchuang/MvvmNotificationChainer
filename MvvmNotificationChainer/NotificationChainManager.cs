@@ -217,6 +217,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (ObservedObject != null)
                 throw new InvalidOperationException ("Can't observe a different object without calling StopObserving() first");
 
+            ObservedObject = notifyingObject;
+
+            NotificationChainPropertyAttribute.CallProperties (ObservedObject);
+
             addEventAction (myPropertyChangedEventHandler);
             myRemovePropertyChangedEventHandler = removeEventAction;
         }

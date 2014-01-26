@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Com.PhilChuang.Utils.MvvmCommandWirer;
+using Com.PhilChuang.Utils.MvvmNotificationChainer;
 using Demo.Utils;
 using Microsoft.Practices.Prism.Commands;
 
@@ -24,6 +25,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager1Name
         {
             get
@@ -50,6 +52,7 @@ namespace Demo3
                 Manager1 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager1CommandText
         {
             get
@@ -88,6 +91,7 @@ namespace Demo3
                 Manager1.Employee1 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager1Employee1CommandText
         {
             get
@@ -101,6 +105,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager1Employee1Name
         {
             get
@@ -142,6 +147,7 @@ namespace Demo3
                 Manager1.Employee2 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager1Employee2CommandText
         {
             get
@@ -155,6 +161,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager1Employee2Name
         {
             get
@@ -180,6 +187,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager2Name
         {
             get
@@ -206,6 +214,7 @@ namespace Demo3
                 Manager2 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager2CommandText
         {
             get
@@ -244,6 +253,7 @@ namespace Demo3
                 Manager2.Employee1 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager2Employee1CommandText
         {
             get
@@ -257,6 +267,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager2Employee1Name
         {
             get
@@ -298,6 +309,7 @@ namespace Demo3
                 Manager2.Employee2 = null;
         }
 
+        [NotificationChainProperty]
         public String Manager2Employee2CommandText
         {
             get
@@ -311,6 +323,7 @@ namespace Demo3
             }
         }
 
+        [NotificationChainProperty]
         public String Manager2Employee2Name
         {
             get
