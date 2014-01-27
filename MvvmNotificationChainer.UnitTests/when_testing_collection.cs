@@ -211,10 +211,7 @@ namespace MvvmNotificationChainer.UnitTests
             {
                 myNotificationChainManager.CreateOrGet ()
                     // TODO see about eliminating explicit type parameters
-                                          .Configure (cn => cn.OnCollection
-                                                                <ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem>,
-                                                                when_testing_2deep_property_dependency_chain_ILineItem>
-                                                                (() => LineItems)
+                                          .Configure (cn => cn.OnCollection (() => LineItems)
                                                               .Finish ());
 
                 return myLineItems != null ? myLineItems.Count : 0;
@@ -227,11 +224,7 @@ namespace MvvmNotificationChainer.UnitTests
             {
                 myNotificationChainManager.CreateOrGet ()
                     // TODO see about eliminating explicit type parameters
-                                          .Configure (cn => cn.OnCollection
-                                                                <ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem>,
-                                                                when_testing_2deep_property_dependency_chain_ILineItem,
-                                                                int>
-                                                                (() => LineItems, li => li.Quantity)
+                                          .Configure (cn => cn.OnCollection (() => LineItems, li => li.Quantity)
                                                               .Finish ());
 
                 return myLineItems != null ? myLineItems.Select (li => li.Quantity).Sum () : 0;
@@ -244,11 +237,7 @@ namespace MvvmNotificationChainer.UnitTests
             {
                 myNotificationChainManager.CreateOrGet ()
                     // TODO see about eliminating explicit type parameters
-                                          .Configure (cn => cn.OnCollection
-                                                                <ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem>,
-                                                                when_testing_2deep_property_dependency_chain_ILineItem,
-                                                                decimal>
-                                                                (() => LineItems, li => li.Cost)
+                                          .Configure (cn => cn.OnCollection (() => LineItems, li => li.Cost)
                                                               .Finish ());
 
                 return myLineItems != null ? myLineItems.Select (li => li.Cost).Sum () : 0;

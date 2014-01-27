@@ -444,8 +444,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return this;
         }
 
-        public NotificationChain OnCollection<T0, T1> (Expression<Func<T0>> collectionPropGetter)
-            where T0 : Collection<T1>, INotifyCollectionChanged
+        public NotificationChain OnCollection<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
         {
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
 
@@ -458,14 +457,18 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return this;
         }
 
-        public NotificationChain OnCollection<T0, T1, T2> (Expression<Func<T0>> collectionPropGetter, Expression<Func<T1, T2>> prop1Getter)
-            where T0 : Collection<T1>, INotifyCollectionChanged
+        public NotificationChain OnCollection<T1, T2> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter, Expression<Func<T1, T2>> prop1Getter)
         {
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
             prop1Getter.ThrowIfNull ("prop1Getter");
 
-            // TODO create deep notification manager, add handling for collections to manager
-            // TODO regular deep chain from there
+            /* algorithm:
+             * 1) get manager for collection prop from parent manager
+             * 2) configure deep chains for collection prop manager
+             * 3) add ability to manager to have multiple observed objects
+             * 4) add ability to manager observe/stopobserving to handle CollectionChanged
+             * 5) on collection changed, observe added items / stopobserving removed items
+             */
 
             throw new NotImplementedException ();
 
