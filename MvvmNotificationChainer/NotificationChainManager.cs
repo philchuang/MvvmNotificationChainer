@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
@@ -13,9 +14,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// </summary>
     public class NotificationChainManager : INotificationChainManager
     {
-        public Object ObservedObject { get; private set; }
+        public IEnumerable<Object> ObservedObjects { get { return myObservedObjects.Keys.Select (o => o); } }
 
         public bool IsDisposed { get; private set; }
+
+        /// <summary>
+        /// Map of an observed object to the delegate to remove the handler for it
+        /// </summary>
+        protected Dictionary<Object, Action<PropertyChangedEventHandler>> myObservedObjects = new Dictionary<object, Action<PropertyChangedEventHandler>> ();
 
         /// <summary>
         /// Map of dependent property name to notification chain manager
@@ -39,35 +45,37 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         private PropertyChangedEventHandler myPropertyChangedEventHandler;
 
-        private Action<PropertyChangedEventHandler> myRemovePropertyChangedEventHandler;
-
         public NotificationChainManager ()
         {
             myPropertyChangedEventHandler = Publish;
         }
 
-        public NotificationChainManager (INotifyPropertyChanged notifyingObject) : this ()
+        public NotificationChainManager (INotifyPropertyChanged notifyingObject)
+            : this ()
         {
             notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
 
-            Observe (notifyingObject);
+            ObserveINotifyPropertyChanged (notifyingObject);
         }
 
         public NotificationChainManager (Object notifyingObject,
                                          Action<PropertyChangedEventHandler> addEventAction,
-                                         Action<PropertyChangedEventHandler> removeEventAction) : this ()
+                                         Action<PropertyChangedEventHandler> removeEventAction)
+            : this ()
         {
-            Observe (notifyingObject, addEventAction, removeEventAction);
+            ObservePropertyChangedEventHandlers (notifyingObject, addEventAction, removeEventAction);
         }
 
         public virtual void Dispose ()
         {
             if (IsDisposed) return;
 
-            ObservedObject = null;
+            foreach (var kvp in myObservedObjects)
+                kvp.Value (myPropertyChangedEventHandler);
 
-            myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
-            myRemovePropertyChangedEventHandler = null;
+            myObservedObjects.Clear ();
+            myObservedObjects = null;
+
             myPropertyChangedEventHandler = null;
 
             foreach (var ncm in myDeepChainManagers.Values)
@@ -193,7 +201,24 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myChains.Remove (dependentPropertyName);
         }
 
-        public void Observe (INotifyPropertyChanged notifyingObject)
+        public virtual void Observe (Object notifyingObject)
+        {
+            notifyingObject.ThrowIfNull ("notifyingObject");
+
+            if (IsDisposed) return;
+
+            if (notifyingObject is INotifyPropertyChanged)
+                Observe ((INotifyPropertyChanged) notifyingObject);
+
+            throw new InvalidOperationException ("Unable to observe an object of type \"{0}\"".FormatWith (notifyingObject.GetType ().FullName));
+        }
+
+        public virtual void Observe (INotifyPropertyChanged notifyingObject)
+        {
+            ObserveINotifyPropertyChanged (notifyingObject);
+        }
+
+        private void ObserveINotifyPropertyChanged (INotifyPropertyChanged notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
 
@@ -202,9 +227,18 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Observe (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h);
         }
 
-        public void Observe (Object notifyingObject,
-                             Action<PropertyChangedEventHandler> addEventAction,
-                             Action<PropertyChangedEventHandler> removeEventAction)
+        public virtual void Observe (
+            Object notifyingObject,
+            Action<PropertyChangedEventHandler> addEventAction,
+            Action<PropertyChangedEventHandler> removeEventAction)
+        {
+            ObservePropertyChangedEventHandlers (notifyingObject, addEventAction, removeEventAction);
+        }
+
+        private void ObservePropertyChangedEventHandlers (
+            Object notifyingObject,
+            Action<PropertyChangedEventHandler> addEventAction,
+            Action<PropertyChangedEventHandler> removeEventAction)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
             addEventAction.ThrowIfNull ("addEventAction");
@@ -212,30 +246,29 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             if (IsDisposed) return;
 
-            if (ReferenceEquals (ObservedObject, notifyingObject)) return;
+            if (myObservedObjects.ContainsKey (notifyingObject)) return;
 
-            if (ObservedObject != null)
-                throw new InvalidOperationException ("Can't observe a different object without calling StopObserving() first");
+            myObservedObjects[notifyingObject] = removeEventAction;
 
-            ObservedObject = notifyingObject;
-
-            NotificationChainPropertyAttribute.CallProperties (ObservedObject);
+            NotificationChainPropertyAttribute.CallProperties (notifyingObject);
 
             addEventAction (myPropertyChangedEventHandler);
-            myRemovePropertyChangedEventHandler = removeEventAction;
         }
 
-        public void StopObserving ()
+        public virtual void StopObserving (Object notifyingObject)
         {
+            notifyingObject.ThrowIfNull ("notifyingObject");
+
             if (IsDisposed) return;
 
-            if (ObservedObject == null) return;
+            Action<PropertyChangedEventHandler> removeHandler;
+            if (!myObservedObjects.TryGetValue (notifyingObject, out removeHandler))
+                return;
 
             lock (this)
             {
-                myRemovePropertyChangedEventHandler (myPropertyChangedEventHandler);
-                myRemovePropertyChangedEventHandler = null;
-                ObservedObject = null;
+                removeHandler (myPropertyChangedEventHandler);
+                myObservedObjects.Remove (notifyingObject);
             }
         }
 
@@ -256,14 +289,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                     var currentPropertyValue = (INotifyPropertyChanged) myDeepChainGetters[args.PropertyName] (sender);
                     if (currentPropertyValue != null)
                     {
-                        if (ReferenceEquals (currentPropertyValue, manager.ObservedObject))
-                            return; // no change
-
-                        manager.StopObserving ();
                         manager.Observe (currentPropertyValue);
                     }
                     else
                     {
+                        // TODO how to get previous value in order to stop observing??
                         if (manager.ObservedObject == null)
                             return; // no change
 

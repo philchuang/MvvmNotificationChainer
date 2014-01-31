@@ -79,9 +79,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain Configure (Action<NotificationChain> configAction)
         {
-            if (IsFinished || IsDisposed) return this;
-
             configAction.ThrowIfNull ("configAction");
+
+            if (IsFinished || IsDisposed) return this;
 
             configAction (this);
 
@@ -96,9 +96,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain On<T1> (Expression<Func<T1>> propGetter)
         {
-            if (IsFinished || IsDisposed) return this;
-
             propGetter.ThrowIfNull ("propGetter");
+
+            if (IsFinished || IsDisposed) return this;
 
             return On (propGetter.GetPropertyName ());
         }
@@ -110,9 +110,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain On (String propertyName)
         {
-            if (IsFinished || IsDisposed) return this;
-
             propertyName.ThrowIfNullOrBlank ("propertyName");
+
+            if (IsFinished || IsDisposed) return this;
 
             if (!myObservedPropertyNames.Contains (propertyName))
                 myObservedPropertyNames.Add (propertyName);
@@ -133,6 +133,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Expression<Func<T1, T2>> prop2Getter)
             where T1 : class, INotifyPropertyChanged
         {
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+			
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
@@ -159,6 +162,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T1 : class, INotifyPropertyChanged
             where T2 : class, INotifyPropertyChanged
         {
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+			
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
@@ -190,6 +197,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T2 : class, INotifyPropertyChanged
             where T3 : class, INotifyPropertyChanged
         {
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+            prop4Getter.ThrowIfNull ("prop4Getter");
+			
             if (IsFinished || IsDisposed) return this;
 
             DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
@@ -210,9 +222,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         private NotificationChain On<T0, T1> (Expression<Func<T0, T1>> propGetter)
         {
-            if (IsFinished || IsDisposed) return this;
-
             propGetter.ThrowIfNull ("propGetter");
+
+            if (IsFinished || IsDisposed) return this;
 
             return On (propGetter.GetPropertyName ());
         }
@@ -232,11 +244,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Expression<Func<T1, T2>> prop2Getter)
             where T1 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -266,11 +278,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T0 : class, INotifyPropertyChanged
             where T1 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -302,12 +314,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T1 : class, INotifyPropertyChanged
             where T2 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -341,12 +353,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T1 : class, INotifyPropertyChanged
             where T2 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -382,13 +394,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T2 : class, INotifyPropertyChanged
             where T3 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
             prop4Getter.ThrowIfNull ("prop4Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -426,13 +438,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T2 : class, INotifyPropertyChanged
             where T3 : class, INotifyPropertyChanged
         {
-            if (IsFinished || IsDisposed) return this;
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             prop1Getter.ThrowIfNull ("prop1Getter");
             prop2Getter.ThrowIfNull ("prop2Getter");
             prop3Getter.ThrowIfNull ("prop3Getter");
             prop4Getter.ThrowIfNull ("prop4Getter");
+
+            if (IsFinished || IsDisposed) return this;
 
             On (prop1Getter);
 
@@ -457,20 +469,49 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return this;
         }
 
-        public NotificationChain OnCollection<T1, T2> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter, Expression<Func<T1, T2>> prop1Getter)
+        public NotificationChain OnCollection<T1, T2> (
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter)
+            where T1 : INotifyPropertyChanged
         {
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
             prop1Getter.ThrowIfNull ("prop1Getter");
 
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOnCollection ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+                    collectionPropGetter,
+                    prop1Getter);
+
+            return this;
+        }
+
+        private NotificationChain DeepOnCollection<T1, T2> (
+            NotificationChainCallback topLevelCallback,
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter)
+            where T1 : INotifyPropertyChanged
+        {
             /* algorithm:
-             * 1) get manager for collection prop from parent manager
              * 2) configure deep chains for collection prop manager
              * 3) add ability to manager to have multiple observed objects
              * 4) add ability to manager observe/stopobserving to handle CollectionChanged
              * 5) on collection changed, observe added items / stopobserving removed items
              */
 
-            throw new NotImplementedException ();
+            topLevelCallback.ThrowIfNull ("topLevelCallback");
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            On (collectionPropGetter);
+
+            var mgr = ParentManager.CreateOrGetManager (collectionPropGetter);
+
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (prop1Getter)
+               .AndCall (topLevelCallback);
 
             return this;
         }
@@ -482,9 +523,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain AndCall (Action callback)
         {
-            if (IsFinished) return this;
-
             callback.ThrowIfNull ("callback");
+
+            if (IsFinished || IsDisposed) return this;
 
             AndCall ((sender, notifyingProperty, dependentProperty) => callback ());
 
@@ -498,9 +539,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain AndCall (NotificationChainCallback callback)
         {
-            if (IsFinished) return this;
-
             callback.ThrowIfNull ("callback");
+
+            if (IsFinished || IsDisposed) return this;
 
             if (myCallbacks.Contains (callback)) return this;
 

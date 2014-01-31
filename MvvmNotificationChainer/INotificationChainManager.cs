@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -12,7 +13,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// </summary>
     public interface INotificationChainManager : IDisposable
     {
-        Object ObservedObject { get; }
+        IEnumerable<Object> ObservedObjects { get; }
 
         bool IsDisposed { get; }
 
@@ -31,21 +32,21 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         void AddDefaultCall (NotificationChainCallback onNotifyingPropertyChanged);
 
         /// <summary>
-        /// Creates a new NotificationChain for the calling property, or returns an existing instance
+        /// Creates a new NotificationChain for the given property, or returns an existing instance
         /// </summary>
         /// <param name="propGetter">Lambda expression for the property that depends on other properties</param>
         /// <returns></returns>
         NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter);
 
         /// <summary>
-        /// Creates a new NotificationChain for the calling property, or returns an existing instance
+        /// Creates a new NotificationChain for the given property, or returns an existing instance
         /// </summary>
         /// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
         /// <returns></returns>
         NotificationChain CreateOrGet ([CallerMemberName] String dependentPropertyName = null);
 
         /// <summary>
-        /// Creates a new NotificationChainManager for the calling property, or returns an existing instance
+        /// Creates a new NotificationChainManager for the given property, or returns an existing instance
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="propGetter"></param>
@@ -54,7 +55,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T1 : class;
 
         /// <summary>
-        /// Creates a new NotificationChainManager for the calling property, or returns an existing instance
+        /// Creates a new NotificationChainManager for the given property, or returns an existing instance
         /// </summary>
         /// <typeparam name="T0"></typeparam>
         /// <typeparam name="T1"></typeparam>
@@ -79,13 +80,19 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         void Clear ([CallerMemberName] String dependentPropertyName = null);
 
         /// <summary>
-        /// Begins observing the given notifying object. If currently observing an object, must call StopObserving first.
+        /// Attempt to determine how to observe the given notifying object, then begin observing it.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        void Observe (Object notifyingObject);
+
+        /// <summary>
+        /// Begins observing the given notifying object.
         /// </summary>
         /// <param name="notifyingObject"></param>
         void Observe (INotifyPropertyChanged notifyingObject);
 
         /// <summary>
-        /// Begins observing the given notifying object. If currently observing an object, must call StopObserving first.
+        /// Begins observing the given notifying object.
         /// </summary>
         /// <param name="notifyingObject"></param>
         /// <param name="addEventAction"></param>
@@ -95,9 +102,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                       Action<PropertyChangedEventHandler> removeEventAction);
 
         /// <summary>
-        /// Stop observing the current notifying object.
+        /// Stop observing the given notifying object.
         /// </summary>
-        void StopObserving ();
+        /// <param name="notifyingObject"></param>
+        void StopObserving (Object notifyingObject);
 
         /// <summary>
         /// Pushes PropertyChangedEventArgs input for processing. Normally called by the PropertyChanged event of the current observed object.
