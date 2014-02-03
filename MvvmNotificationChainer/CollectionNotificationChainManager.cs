@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
@@ -10,99 +12,84 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// Prevents duplication of NotificationChains by dependent property name.
     /// When disposing, calls Dispose on all NotificationChains.
     /// </summary>
-    public class CollectionNotificationChainManager : NotificationChainManager
+    public class CollectionNotificationChainManager : NotificationChainManager, ICollectionNotificationChainManager
     {
-        public INotifyCollectionChanged ObservedCollection { get; private set; }
+        public const String ObservedCollectionPropertyName = ".";
+
+        /// <summary>
+        /// Map of an observed collection to the delegate to remove the handler for it
+        /// </summary>
+        private Dictionary<INotifyCollectionChanged, Action> myObservedCollections = new Dictionary<INotifyCollectionChanged, Action> ();
+
+        public IEnumerable<INotifyCollectionChanged> ObservedCollections { get { return myObservedCollections.Keys; } }
 
         private NotifyCollectionChangedEventHandler myCollectionChangedEventHandler;
-
-        private Action<NotifyCollectionChangedEventHandler> myRemoveCollectionChangedEventHandler;
 
         public CollectionNotificationChainManager ()
         {
             myCollectionChangedEventHandler = OnCollectionChanged;
         }
 
-        public CollectionNotificationChainManager (INotifyCollectionChanged notifyingObject)
+        public CollectionNotificationChainManager (INotifyCollectionChanged notifyingCollection)
             : this ()
         {
-            notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
+            notifyingCollection.ThrowIfNull ("notifyingCollection");
 
-            Observe (notifyingObject);
+            ObserveCollection (notifyingCollection);
         }
 
         public override void Dispose ()
         {
             if (IsDisposed) return;
 
-            if (myRemoveCollectionChangedEventHandler != null)
-            {
-                myRemoveCollectionChangedEventHandler (myCollectionChangedEventHandler);
-                myRemoveCollectionChangedEventHandler = null;
-            }
+            foreach (var kvp in myObservedCollections)
+                kvp.Value ();
+            myObservedCollections.Clear();
+            myObservedCollections = null;
+
             myCollectionChangedEventHandler = null;
 
             base.Dispose ();
         }
 
-        public override void Observe (Object notifyingCollection)
+        public void ObserveCollection (INotifyCollectionChanged notifyingCollection)
         {
             notifyingCollection.ThrowIfNull ("notifyingCollection");
 
             if (IsDisposed) return;
 
-            if (notifyingCollection is INotifyCollectionChanged)
-                Observe ((INotifyCollectionChanged) notifyingCollection);
+            if (myObservedCollections.ContainsKey (notifyingCollection)) return;
 
-            throw new InvalidOperationException ("Unable to observe an object of type \"{0}\"".FormatWith (notifyingCollection.GetType ().FullName));
-        }
+            myObservedCollections[notifyingCollection] = () => notifyingCollection.CollectionChanged -= myCollectionChangedEventHandler;
 
-        public void Observe (INotifyCollectionChanged notifyingCollection)
-        {
-            notifyingCollection.ThrowIfNull ("notifyingCollection");
-
-            if (IsDisposed) return;
-
-            if (ReferenceEquals (ObservedCollection, notifyingCollection)) return;
-
-            if (ObservedCollection != null)
-                throw new InvalidOperationException ("Can't observe a different collection without calling StopObserving() first");
-
-            ObservedCollection = notifyingCollection;
-
-            NotificationChainPropertyAttribute.CallProperties (ObservedCollection);
+            NotificationChainPropertyAttribute.CallProperties (notifyingCollection);
 
             notifyingCollection.CollectionChanged += myCollectionChangedEventHandler;
-            myRemoveCollectionChangedEventHandler = h => notifyingCollection.CollectionChanged -= h;
+
+            if (notifyingCollection is IEnumerable)
+                foreach (var item in (IEnumerable) notifyingCollection)
+                    base.Observe (item);
         }
 
-        public override void Observe (INotifyPropertyChanged notifyingObject)
-        {
-            throw new InvalidOperationException ("Cannot call Observe (INotifyPropertyChanged notifyingObject) on this class");
-        }
-
-        public override void Observe (
-            Object notifyingObject,
-            Action<PropertyChangedEventHandler> addEventAction,
-            Action<PropertyChangedEventHandler> removeEventAction)
-        {
-            throw new InvalidOperationException ("Cannot call Observe (Object notifyingObject, Action<PropertyChangedEventHandler> addEventAction, Action<PropertyChangedEventHandler> removeEventAction) on this class");
-        }
-
-        public override void StopObserving (object notifyingCollection)
+        public void StopObservingCollection (INotifyCollectionChanged notifyingCollection)
         {
             notifyingCollection.ThrowIfNull ("notifyingCollection");
 
-            if (!ReferenceEquals (ObservedCollection, notifyingCollection))
-                throw new ArgumentException("The given notifying collection does not match the current collection");
+            if (IsDisposed) return;
 
-            if (ObservedCollection == null) return;
+            Action removeHandler;
+            if (!myObservedCollections.TryGetValue (notifyingCollection, out removeHandler))
+                return;
 
             lock (this)
             {
-                ObservedCollection = null;
-                myRemoveCollectionChangedEventHandler (myCollectionChangedEventHandler);
-                myRemoveCollectionChangedEventHandler = null;
+                removeHandler ();
+
+                if (notifyingCollection is IEnumerable)
+                    foreach (var item in (IEnumerable) notifyingCollection)
+                        base.StopObserving (item);
+
+                myObservedCollections.Remove (notifyingCollection);
             }
         }
 
@@ -114,6 +101,8 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (e.NewItems != null)
                 foreach (var newItem in e.NewItems)
                     base.Observe (newItem);
+
+            Publish (sender, new PropertyChangedEventArgs (ObservedCollectionPropertyName));
         }
     }
 }

@@ -157,4 +157,74 @@ namespace MvvmNotificationChainer.UnitTests
             Assert.AreEqual (0, myChainNotifications.Count);
         }
     }
+
+    public abstract class when_using_NotificationChain_OnRegex_and_Publish : when_using_NotificationChain
+    {
+        protected abstract String ObservingProperty { get; }
+        protected const String NotifyingProperty = "NotifyingProperty";
+
+        protected readonly Object mySender = new object ();
+
+        protected bool myChainCallbackCalled = false;
+        protected List<Tuple<Object, String, String>> myChainNotifications = new List<Tuple<object, string, string>> ();
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            myChain.AndCall ((sender, notifyingProperty, dependentProperty) =>
+            {
+                myChainCallbackCalled = true;
+                myChainNotifications.Add (new Tuple<object, string, string> (sender, notifyingProperty, dependentProperty));
+            });
+        }
+
+        protected override void Because_of ()
+        {
+            base.Because_of ();
+
+            try
+            {
+                myChain.OnRegex (ObservingProperty);
+                myChain.Publish (mySender, new PropertyChangedEventArgs (NotifyingProperty));
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_observed_property_should_be_configured ()
+        {
+            Assert.IsTrue (myChain.ObservedRegexes.Contains (ObservingProperty));
+        }
+    }
+
+    public class when_using_NotificationChain_OnRegex_and_publishing_observed_property : when_using_NotificationChain_OnRegex_and_Publish
+    {
+        protected override String ObservingProperty { get { return "^Notifying.+$"; } }
+
+        [Test]
+        public void then_callback_should_be_called ()
+        {
+            Assert.IsTrue (myChainCallbackCalled);
+            Assert.AreEqual (1, myChainNotifications.Count);
+            Assert.AreEqual (mySender, myChainNotifications[0].Item1);
+            Assert.AreEqual (NotifyingProperty, myChainNotifications[0].Item2);
+            Assert.AreEqual (DependentPropertyName, myChainNotifications[0].Item3);
+        }
+    }
+
+    public class when_using_NotificationChain_OnRegex_and_publishing_unobserved_property : when_using_NotificationChain_OnRegex_and_Publish
+    {
+        protected override String ObservingProperty { get { return "NotifieingProperty"; } }
+
+        [Test]
+        public void then_callback_should_not_be_called ()
+        {
+            Assert.IsFalse (myChainCallbackCalled);
+            Assert.AreEqual (0, myChainNotifications.Count);
+        }
+    }
 }

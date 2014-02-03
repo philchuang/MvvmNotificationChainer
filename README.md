@@ -214,6 +214,51 @@ public String UserFirstName
 
 *UserFirstName* will notify when *User* or *User.FirstName* notifies. Currently depth of 4 is supported, but it's easy enough to add more depth if necessary.
 
+Collection Observation
+-----------------------------
+
+ObservableCollections can be observed, as well as the items inside the collection:
+
+```C#
+private ObservableCollection<LineItem> myLineItems;
+public ObservableCollection<LineItem> LineItems
+{
+	get { return myLineItems; }
+	set
+	{
+		myLineItems = value;
+		RaisePropertyChanged("LineItems");
+	}
+}
+
+public int TotalLineItems
+{
+	get
+	{
+		myNotificationChainManager.CreateOrGet()
+		                          .Configure (cn => cn.OnCollection (() => LineItems)
+		                                              .Finish ());
+		
+		return LineItems == null ? 0 : LineItems.Count;
+	}
+}
+
+public decimal TotalCost
+{
+	get
+	{
+		myNotificationChainManager.CreateOrGet()
+		                          .Configure (cn => cn.OnCollection (() => LineItems, li => li.Cost)
+		                                              .Finish ());
+		
+		return LineItems == null ? 0 : LineItems.Select (li => li.Cost).Sum ();
+	}
+}
+```
+*TotalLineItems* will notify when when the LineItems collection is set, or when items are added/removed. The CollectionChanged event is being observed.
+
+*TotalCost* will notify when LineItems is set, or when items are added/removed, or when any LineItem's Cost is modified. The CollectionChanged event is being observed, but also, when LineItems are added/removed to the collection, their PropertyChanged events are observed.
+
 Integrate with MVVM ICommands
 -----------------------------
 
@@ -270,20 +315,22 @@ So with **MvvmNotificationChainer**, you can reduce coupling by keeping the flow
 Status
 ------
 
-Initial functionality is done and seems to work as expected.
+Initial functionality is done, but haven't yet checked for long-term memory leaks or optimizations.
 
 Implemented Features:
 
 * Performs PropertyChanged for a dependent property whenever a watched property changes
+	* Can also use Regular Expressions to trigger a chain
 * Supports notification chains 4 levels deep
+* Support for observing `NotifyCollectionChangedEventHandler`
+	* For now, can't do deep chaining of nested collections
 * Compile-time property name safety for easy refactoring
 * Creates & configures just once per chain, trivial performance hit on initialization
 * Bolt-on code: No need to change base classes, or extensively modify existing ViewModels
 
 To Dos:
 
-* Write unit tests (I know, I suck at TDD)
-* Support for observing `NotifyCollectionChangedEventHandler`
+* Write more unit tests (I know, I suck at TDD)
 
 Caveats:
 

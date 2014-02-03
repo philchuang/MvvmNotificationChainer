@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Com.PhilChuang.Utils;
+using Com.PhilChuang.Utils.MvvmNotificationChainer;
 using Demo.Utils;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -210,7 +211,6 @@ namespace MvvmNotificationChainer.UnitTests
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    // TODO see about eliminating explicit type parameters
                                           .Configure (cn => cn.OnCollection (() => LineItems)
                                                               .Finish ());
 
@@ -223,7 +223,6 @@ namespace MvvmNotificationChainer.UnitTests
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    // TODO see about eliminating explicit type parameters
                                           .Configure (cn => cn.OnCollection (() => LineItems, li => li.Quantity)
                                                               .Finish ());
 
@@ -236,7 +235,6 @@ namespace MvvmNotificationChainer.UnitTests
             get
             {
                 myNotificationChainManager.CreateOrGet ()
-                    // TODO see about eliminating explicit type parameters
                                           .Configure (cn => cn.OnCollection (() => LineItems, li => li.Cost)
                                                               .Finish ());
 
@@ -246,6 +244,277 @@ namespace MvvmNotificationChainer.UnitTests
     }
 
     public class when_using_MvvmNotificationChainer_and_collection_LineItem : when_using_NotificationChainPropertyAttribute_LineItem
+    {
+    }
+
+    public abstract class when_testing_collection_deep<TViewModel, TOrder, TLineItem> : when_using_INotifyPropertyChanged
+        where TViewModel : when_testing_collection_deep_IViewModel
+        where TOrder : when_testing_collection_deep_IOrder
+        where TLineItem : when_testing_2deep_property_dependency_chain_ILineItem
+    {
+        protected TViewModel myViewModel;
+
+        protected override void Establish_context ()
+        {
+            myViewModel = Activator.CreateInstance<TViewModel> ();
+            myViewModel.PropertyChanged += OnPropertyChanged;
+
+            //myViewModel.Orders = new ObservableCollection<when_testing_collection_deep_IOrder> ();
+            myExpectedNotifications.Add ("Orders");
+            myExpectedNotifications.Add ("TotalOrders");
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders.Add (Activator.CreateInstance<TOrder> ());
+            myExpectedNotifications.Add ("TotalOrders");
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders[0].LineItems = new ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> ();
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders[0].LineItems.Add (Activator.CreateInstance<TLineItem> ());
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders[0].LineItems[0].Quantity = 1;
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders[0].LineItems[0].Price = 100;
+            myExpectedNotifications.Add ("TotalCost");
+            //var li = Activator.CreateInstance<TLineItem> ();
+            //li.Quantity = 2;
+            //li.Price = 50;
+            //myViewModel.Orders[0].LineItems.Add (li);
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //var order = Activator.CreateInstance<TOrder> ();
+            //li = Activator.CreateInstance<TLineItem> ();
+            //li.Quantity = 2;
+            //li.Price = 33.33m;
+            //order.LineItems = new ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> ();
+            //order.LineItems.Add (li);
+            //myViewModel.Orders.Add (order);
+            myExpectedNotifications.Add ("TotalOrders");
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.Orders[1].LineItems[0].Quantity = 3;
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
+        }
+
+        protected virtual void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
+        { myActualNotifications.Add (e.PropertyName); }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myViewModel.Orders = new ObservableCollection<when_testing_collection_deep_IOrder> ();
+                // Orders
+                // TotalOrders
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders.Add (Activator.CreateInstance<TOrder> ());
+                // TotalOrders
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders[0].LineItems = new ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> ();
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders[0].LineItems.Add (Activator.CreateInstance<TLineItem> ());
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders[0].LineItems[0].Quantity = 1;
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders[0].LineItems[0].Price = 100;
+                // TotalCost
+                var li = Activator.CreateInstance<TLineItem> ();
+                li.Quantity = 2;
+                li.Price = 50;
+                myViewModel.Orders[0].LineItems.Add (li);
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                var order = Activator.CreateInstance<TOrder> ();
+                li = Activator.CreateInstance<TLineItem> ();
+                li.Quantity = 2;
+                li.Price = 33.33m;
+                order.LineItems = new ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> ();
+                order.LineItems.Add (li);
+                myViewModel.Orders.Add (order);
+                // TotalOrders
+                // TotalLineItems
+                // TotalItemQuantity
+                // TotalCost
+                myViewModel.Orders[1].LineItems[0].Quantity = 3;
+                // TotalItemQuantity
+                // TotalCost
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Order History
+    /// </summary>
+    public interface when_testing_collection_deep_IViewModel : INotifyPropertyChanged
+    {
+        ObservableCollection<when_testing_collection_deep_IOrder> Orders { get; set; }
+
+        int TotalOrders { get; }
+        int TotalLineItems { get; }
+        int TotalItemQuantity { get; }
+        decimal TotalCost { get; }
+    }
+
+    public interface when_testing_collection_deep_IOrder : INotifyPropertyChanged
+    {
+        ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> LineItems { get; set; }
+
+        int TotalLineItems { get; }
+        int TotalItemQuantity { get; }
+        decimal TotalCost { get; }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_collection_deep :
+        when_testing_collection_deep<
+            when_using_MvvmNotificationChainer_and_collection_deep_ViewModel,
+            when_using_MvvmNotificationChainer_and_collection_deep_Order,
+            when_using_MvvmNotificationChainer_and_collection_deep_LineItem>
+    {
+        protected override void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "PropertyChangedOutput") return;
+            base.OnPropertyChanged (sender, e);
+        }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_collection_deep_ViewModel : NotifyPropertyChangedBase, when_testing_collection_deep_IViewModel
+    {
+        private ObservableCollection<when_testing_collection_deep_IOrder> myOrders;
+        public ObservableCollection<when_testing_collection_deep_IOrder> Orders
+        {
+            get { return myOrders; }
+            set
+            {
+                myOrders = value;
+                RaisePropertyChanged ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public int TotalOrders
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => Orders).Finish ());
+
+                return Orders == null ? 0 : Orders.Count;
+            }
+        }
+
+        [NotificationChainProperty]
+        public int TotalLineItems
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => Orders, o => o.TotalLineItems).Finish ());
+
+                return Orders == null ? 0 : Orders.Select (o => o.LineItems == null ? 0 : o.LineItems.Count).Sum ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public int TotalItemQuantity
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => Orders, o => o.TotalItemQuantity).Finish ());
+
+                return Orders == null ? 0 : Orders.Select (o => o.TotalItemQuantity).Sum ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public decimal TotalCost
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => Orders, o => o.TotalCost).Finish ());
+
+                return Orders == null ? 0 : Orders.Select (o => o.TotalCost).Sum ();
+            }
+
+        }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_collection_deep_Order : NotifyPropertyChangedBase, when_testing_collection_deep_IOrder
+    {
+        private ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> myLineItems;
+        public ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> LineItems
+        {
+            get { return myLineItems; }
+            set
+            {
+                myLineItems = value;
+                RaisePropertyChanged ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public int TotalLineItems
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => LineItems).Finish ());
+
+                return LineItems == null ? 0 : LineItems.Count ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public int TotalItemQuantity
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => LineItems, o => o.Quantity).Finish ());
+
+                return LineItems == null ? 0 : LineItems.Select (o => o.Quantity).Sum ();
+            }
+        }
+
+        [NotificationChainProperty]
+        public decimal TotalCost
+        {
+            get
+            {
+                myNotificationChainManager.CreateOrGet ()
+                                          .Configure (cn => cn.OnCollection (() => LineItems, o => o.Cost).Finish ());
+
+                return LineItems == null ? 0 : LineItems.Select (o => o.Cost).Sum ();
+            }
+        }
+    }
+
+    public class when_using_MvvmNotificationChainer_and_collection_deep_LineItem : when_using_NotificationChainPropertyAttribute_LineItem
     {
     }
 }

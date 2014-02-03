@@ -2,8 +2,4 @@
 	* 3 deep chain
 	* 4 deep chain
 * unit tests
-	* notification chain
 	* notification chain manager
-* v1.1
-	* handle INotifyCollectionChanged
-	* should notification chain manager be typed?

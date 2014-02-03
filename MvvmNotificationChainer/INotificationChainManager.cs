@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -63,6 +64,15 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         INotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
             where T0 : INotifyPropertyChanged
+            where T1 : class;
+
+        /// <summary>
+        /// Creates a new NotificationChainManager for the given collection property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="collectionPropGetter"></param>
+        /// <returns></returns>
+        ICollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
             where T1 : class;
 
         /// <summary>

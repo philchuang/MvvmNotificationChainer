@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
@@ -30,9 +31,19 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// The properties being observed by this chain
         /// </summary>
-        public IList<String> ObservedPropertyNames
+        public IEnumerable<String> ObservedPropertyNames
         {
-            get { return myObservedPropertyNames.ToList (); }
+            get { return myObservedPropertyNames.Select(s => s); }
+        }
+
+        private List<Regex> myObservedRegexes = new List<Regex> ();
+
+        /// <summary>
+        /// The property regexes being observed by this chain
+        /// </summary>
+        public IEnumerable<String> ObservedRegexes
+        {
+            get { return myObservedRegexes.Select (r => r.ToString ()); }
         }
 
         /// <summary>
@@ -43,6 +54,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public bool IsDisposed { get; private set; }
 
         private List<NotificationChainCallback> myCallbacks = new List<NotificationChainCallback> ();
+        private NotificationChainCallback myFireCallbacksCallback;
 
         /// <summary>
         /// </summary>
@@ -55,6 +67,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             ParentManager = parentManager;
             DependentPropertyName = dependentPropertyName;
+            myFireCallbacksCallback = (sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName);
         }
 
         public void Dispose ()
@@ -66,8 +79,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myObservedPropertyNames.Clear ();
             myObservedPropertyNames = null;
 
+            myObservedRegexes.Clear ();
+            myObservedRegexes = null;
+
             myCallbacks.Clear ();
             myCallbacks = null;
+
+            myFireCallbacksCallback = null;
 
             IsDisposed = true;
         }
@@ -84,6 +102,32 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsFinished || IsDisposed) return this;
 
             configAction (this);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Watch for any notifications on current notifying object
+        /// </summary>
+        /// <returns></returns>
+        public NotificationChain OnAny ()
+        {
+            return OnRegex (@"^.*$");
+        }
+
+        /// <summary>
+        /// Specifies a regex to watch for on the current notifying object
+        /// </summary>
+        /// <param name="regex"></param>
+        /// <returns></returns>
+        public NotificationChain OnRegex (String regex)
+        {
+            regex.ThrowIfNullOrBlank ("regex");
+
+            if (IsFinished || IsDisposed) return this;
+
+            if (!ObservedRegexes.Contains (regex))
+                myObservedRegexes.Add (new Regex (regex));
 
             return this;
         }
@@ -138,7 +182,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 			
             if (IsFinished || IsDisposed) return this;
 
-            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+            DeepOn (myFireCallbacksCallback,
                     prop1Getter,
                     prop2Getter);
 
@@ -168,7 +212,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 			
             if (IsFinished || IsDisposed) return this;
 
-            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+            DeepOn (myFireCallbacksCallback,
                     prop1Getter,
                     prop2Getter,
                     prop3Getter);
@@ -204,7 +248,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 			
             if (IsFinished || IsDisposed) return this;
 
-            DeepOn ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
+            DeepOn (myFireCallbacksCallback,
                     prop1Getter,
                     prop2Getter,
                     prop3Getter,
@@ -457,14 +501,19 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         public NotificationChain OnCollection<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
+            where T1 : class
         {
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
 
+            // notify when the collection object completely changes
             On (collectionPropGetter);
 
-            // TODO create deep notification manager, add handling for collections to manager
+            // notify when the collection is modified (items added/removed)
+            var mgr = ParentManager.CreateOrGetCollectionManager (collectionPropGetter);
 
-            throw new NotImplementedException ();
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (CollectionNotificationChainManager.ObservedCollectionPropertyName)
+               .AndCall (myFireCallbacksCallback);
 
             return this;
         }
@@ -472,16 +521,77 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public NotificationChain OnCollection<T1, T2> (
             Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
             Expression<Func<T1, T2>> prop1Getter)
-            where T1 : INotifyPropertyChanged
+            where T1 : class, INotifyPropertyChanged
         {
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
             prop1Getter.ThrowIfNull ("prop1Getter");
 
             if (IsFinished || IsDisposed) return this;
 
-            DeepOnCollection ((sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName),
-                    collectionPropGetter,
-                    prop1Getter);
+            DeepOnCollection (myFireCallbacksCallback, collectionPropGetter, prop1Getter);
+
+            return this;
+        }
+
+        public NotificationChain OnCollection<T1, T2, T3> (
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+        {
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOnCollection (myFireCallbacksCallback, collectionPropGetter, prop1Getter, prop2Getter);
+
+            return this;
+        }
+
+        public NotificationChain OnCollection<T1, T2, T3, T4> (
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter,
+            Expression<Func<T3, T4>> prop3Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+            where T3 : class, INotifyPropertyChanged
+        {
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOnCollection (myFireCallbacksCallback, collectionPropGetter, prop1Getter, prop2Getter, prop3Getter);
+
+            return this;
+        }
+
+        public NotificationChain OnCollection<T1, T2, T3, T4, T5> (
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter,
+            Expression<Func<T3, T4>> prop3Getter,
+            Expression<Func<T4, T5>> prop4Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+            where T3 : class, INotifyPropertyChanged
+            where T4 : class, INotifyPropertyChanged
+        {
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+            prop4Getter.ThrowIfNull ("prop4Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            DeepOnCollection (myFireCallbacksCallback, collectionPropGetter, prop1Getter, prop2Getter, prop3Getter, prop4Getter);
 
             return this;
         }
@@ -490,28 +600,111 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             NotificationChainCallback topLevelCallback,
             Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
             Expression<Func<T1, T2>> prop1Getter)
-            where T1 : INotifyPropertyChanged
+            where T1 : class, INotifyPropertyChanged
         {
-            /* algorithm:
-             * 2) configure deep chains for collection prop manager
-             * 3) add ability to manager to have multiple observed objects
-             * 4) add ability to manager observe/stopobserving to handle CollectionChanged
-             * 5) on collection changed, observe added items / stopobserving removed items
-             */
-
             topLevelCallback.ThrowIfNull ("topLevelCallback");
             collectionPropGetter.ThrowIfNull ("collectionPropGetter");
             prop1Getter.ThrowIfNull ("prop1Getter");
 
             if (IsFinished || IsDisposed) return this;
 
+            // notify when the collection object completely changes
             On (collectionPropGetter);
 
-            var mgr = ParentManager.CreateOrGetManager (collectionPropGetter);
+            // notify when the collection is modified (items added/removed)
+            var mgr = ParentManager.CreateOrGetCollectionManager (collectionPropGetter);
 
             mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (CollectionNotificationChainManager.ObservedCollectionPropertyName)
                .On (prop1Getter)
                .AndCall (topLevelCallback);
+
+            return this;
+        }
+
+        private NotificationChain DeepOnCollection<T1, T2, T3> (
+            NotificationChainCallback topLevelCallback,
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+        {
+            topLevelCallback.ThrowIfNull ("topLevelCallback");
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            On (collectionPropGetter);
+
+            var mgr = ParentManager.CreateOrGetCollectionManager (collectionPropGetter);
+
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (CollectionNotificationChainManager.ObservedCollectionPropertyName)
+               .DeepOn (topLevelCallback, prop1Getter, prop2Getter);
+
+            return this;
+        }
+
+        private NotificationChain DeepOnCollection<T1, T2, T3, T4> (
+            NotificationChainCallback topLevelCallback,
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter,
+            Expression<Func<T3, T4>> prop3Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+            where T3 : class, INotifyPropertyChanged
+        {
+            topLevelCallback.ThrowIfNull ("topLevelCallback");
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            On (collectionPropGetter);
+
+            var mgr = ParentManager.CreateOrGetCollectionManager (collectionPropGetter);
+
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (CollectionNotificationChainManager.ObservedCollectionPropertyName)
+               .DeepOn (topLevelCallback, prop1Getter, prop2Getter, prop3Getter);
+
+            return this;
+        
+        }
+        private NotificationChain DeepOnCollection<T1, T2, T3, T4, T5> (
+            NotificationChainCallback topLevelCallback,
+            Expression<Func<ObservableCollection<T1>>> collectionPropGetter,
+            Expression<Func<T1, T2>> prop1Getter,
+            Expression<Func<T2, T3>> prop2Getter,
+            Expression<Func<T3, T4>> prop3Getter,
+            Expression<Func<T4, T5>> prop4Getter)
+            where T1 : class, INotifyPropertyChanged
+            where T2 : class, INotifyPropertyChanged
+            where T3 : class, INotifyPropertyChanged
+            where T4 : class, INotifyPropertyChanged
+        {
+            topLevelCallback.ThrowIfNull ("topLevelCallback");
+            collectionPropGetter.ThrowIfNull ("collectionPropGetter");
+            prop1Getter.ThrowIfNull ("prop1Getter");
+            prop2Getter.ThrowIfNull ("prop2Getter");
+            prop3Getter.ThrowIfNull ("prop3Getter");
+            prop4Getter.ThrowIfNull ("prop4Getter");
+
+            if (IsFinished || IsDisposed) return this;
+
+            On (collectionPropGetter);
+
+            var mgr = ParentManager.CreateOrGetCollectionManager (collectionPropGetter);
+
+            mgr.CreateOrGet ("../" + DependentPropertyName)
+               .On (CollectionNotificationChainManager.ObservedCollectionPropertyName)
+               .DeepOn (topLevelCallback, prop1Getter, prop2Getter, prop3Getter, prop4Getter);
 
             return this;
         }
@@ -581,7 +774,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns>whether or not the callbacks were triggered</returns>
         public bool Publish (Object sender, PropertyChangedEventArgs args)
         {
-            if (!myObservedPropertyNames.Contains (args.PropertyName)) return false;
+            if (!myObservedPropertyNames.Contains (args.PropertyName))
+            {
+                if (!myObservedRegexes.Any (r => r.IsMatch (args.PropertyName))) return false;
+            }
 
             FireCallbacks (sender, args.PropertyName, DependentPropertyName);
             return true;
