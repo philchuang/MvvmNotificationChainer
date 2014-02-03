@@ -84,6 +84,7 @@
       <Link>Utils\Extensions.cs</Link>
     </Compile>
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Utils\DataGridRowToIndexConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

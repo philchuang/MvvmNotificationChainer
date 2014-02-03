@@ -18,7 +18,7 @@ namespace Demo4
     /// </summary>
     public class MainWindowViewModel : NotifyPropertyChangedBaseDebug
     {
-        private ObservableCollection<Order> myOrders;
+        private ObservableCollection<Order> myOrders = new ObservableCollection<Order> ();
         public ObservableCollection<Order> Orders
         {
             get { return myOrders; }
@@ -64,11 +64,64 @@ namespace Demo4
                 return Orders == null ? 0 : Orders.Select (o => o.TotalCost).Sum ();
             }
         }
+
+        [CommandProperty (commandType: typeof (DelegateCommand))]
+        public ICommand AddOrderCommand { get; private set; }
+
+        [CommandExecuteMethod]
+        private void AddOrder ()
+        {
+            Orders.Add (new Order ());
+        }
+
+        [CommandProperty (commandType: typeof (DelegateCommand<Order>), paramType: typeof (Order))]
+        public ICommand DeleteOrderCommand { get; private set; }
+
+        [CommandCanExecuteMethod]
+        private bool CanDeleteOrder (Order order)
+        { return order != null; }
+
+        [CommandExecuteMethod]
+        private void DeleteOrder (Order order)
+        {
+            Orders.Remove (order);
+        }
+
+        [CommandProperty (commandType: typeof (DelegateCommand<Order>), paramType: typeof (Order))]
+        public ICommand AddLineItemCommand { get; private set; }
+
+        [CommandCanExecuteMethod]
+        private bool CanAddLineItem (Order order)
+        { return order != null; }
+
+        [CommandExecuteMethod]
+        private void AddLineItem (Order order)
+        {
+            order.LineItems.Add (new LineItem {Order = order});
+        }
+
+        [CommandProperty (commandType: typeof (DelegateCommand<LineItem>), paramType: typeof (LineItem))]
+        public ICommand DeleteLineItemCommand { get; private set; }
+
+        [CommandCanExecuteMethod]
+        private bool CanDeleteLineItem (LineItem item)
+        { return item != null; }
+
+        [CommandExecuteMethod]
+        private void DeleteLineItem (LineItem item)
+        {
+            item.Order.LineItems.Remove (item);
+        }
+
+        public MainWindowViewModel ()
+        {
+            CommandWirer.WireAll (this);
+        }
     }
 
     public class Order : NotifyPropertyChangedBase
     {
-        private ObservableCollection<LineItem> myLineItems;
+        private ObservableCollection<LineItem> myLineItems = new ObservableCollection<LineItem> ();
         public ObservableCollection<LineItem> LineItems
         {
             get { return myLineItems; }
@@ -151,6 +204,17 @@ namespace Demo4
                                                               .Finish ());
 
                 return Quantity * Price;
+            }
+        }
+
+        private Order myOrder;
+        public Order Order
+        {
+            get { return myOrder; }
+            set
+            {
+                myOrder = value;
+                RaisePropertyChanged ();
             }
         }
     }

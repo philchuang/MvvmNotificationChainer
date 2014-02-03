@@ -4,24 +4,154 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:demo="clr-namespace:Demo4"
-        xmlns:utils="clr-namespace:Demo2.Utils"
+        xmlns:utils1="clr-namespace:Demo4.Utils"
         mc:Ignorable="d" 
-        d:DataContext="{Binding Source={d:DesignInstance Type=demo:MainWindowViewModel, IsDesignTimeCreatable=True}}"
-        Title="MainWindow" Height="600" Width="500">
+        d:DataContext="{Binding Source={d:DesignInstance Type=demo:MainWindowViewModel, IsDesignTimeCreatable=False}}"
+        Title="MainWindow" Height="600" Width="800">
     
     <Window.Resources>
-        <utils:NullToFalseConverter x:Key="NullToFalseConverter" />
+        <utils1:DataGridRowToIndexConverter x:Key="DataGridRowToIndexConverter" Offset="1" />
     </Window.Resources>
-    
-    <Grid>
-        
-        <!--TODO finish-->
-        
-        <Border Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="12" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="300" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <DataGrid Grid.ColumnSpan="3" Grid.Row="0"
+                      ItemsSource="{Binding Orders}" 
+                      AutoGenerateColumns="false" IsReadOnly="True"
+                      RowDetailsVisibilityMode="Visible"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Order #" Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=DataGridRow}, Converter={StaticResource DataGridRowToIndexConverter}, Mode=OneWay}" Width="*" />
+                    
+                    <DataGridTemplateColumn Header="del" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Button Content="x" 
+                                            Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                                            CommandParameter="{Binding}"
+                                            HorizontalAlignment="Right" 
+                                            Width="30"
+                                            Margin="5" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+                
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
+
+                            <DataGrid d:DataContext="{d:DesignInstance demo:Order}"
+                                      ItemsSource="{Binding LineItems}"
+                                      AutoGenerateColumns="false" IsReadOnly="True"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
+                                <DataGrid.Columns>
+                                    
+                                    <DataGridTextColumn Header="Line #" 
+                                                        d:DataContext="{d:DesignInstance demo:LineItem}"
+                                                        Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=DataGridRow}, Converter={StaticResource DataGridRowToIndexConverter}, Mode=OneWay}" 
+                                                        Width="SizeToCells" />
+
+                                    <DataGridTemplateColumn Header="Qty" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBox d:DataContext="{d:DesignInstance demo:LineItem}" Text="{Binding Quantity}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Price" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBox d:DataContext="{d:DesignInstance demo:LineItem}" Text="{Binding Price, StringFormat=$0.00}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn Header="Cost" 
+                                                        d:DataContext="{d:DesignInstance demo:LineItem}"
+                                                        Binding="{Binding Cost, StringFormat=$0.00, Mode=OneWay}" 
+                                                        Width="*" />
+                                    
+                                    <DataGridTemplateColumn Header="del" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Button Content="x" 
+                                                            Command="{Binding DataContext.DeleteLineItemCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                                                            CommandParameter="{Binding}"
+                                                            HorizontalAlignment="Right" 
+                                                            Width="30"
+                                                            Margin="5" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button Content="+ Line" 
+                                    Command="{Binding DataContext.AddLineItemCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                                    CommandParameter="{Binding}"
+                                    HorizontalAlignment="Left"
+                                    Margin="10" />
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+            </DataGrid>
+            
+            <Button Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" 
+                    Content="+ Order" 
+                    Command="{Binding DataContext.AddOrderCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                    HorizontalAlignment="Left"
+                    Margin="10" />
+
+            <TextBlock Grid.Column="0" Grid.Row="2" Text="Orders" Margin="10,5" />
+            <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding TotalOrders}" Margin="10,5" />
+
+            <TextBlock Grid.Column="0" Grid.Row="3" Text="Total Items" Margin="10,5" />
+            <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding TotalItems}" Margin="10,5" />
+
+            <TextBlock Grid.Column="0" Grid.Row="4" Text="Total Cost" Margin="10,5" />
+            <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding TotalCost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
+
+        </Grid>
+
+        <Border Grid.Column="2" BorderBrush="LightGray" BorderThickness="1" Margin="5">
             <ScrollViewer VerticalScrollBarVisibility="Visible">
                 <TextBlock Text="{Binding PropertyChangedOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </ScrollViewer>
         </Border>
-        
     </Grid>
 </Window>
