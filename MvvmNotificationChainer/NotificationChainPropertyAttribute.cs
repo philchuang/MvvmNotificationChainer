@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
+    [AttributeUsage (AttributeTargets.Property)]
     public class NotificationChainPropertyAttribute : Attribute
     {
         /// <summary>
