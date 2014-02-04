@@ -4,14 +4,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:demo="clr-namespace:Demo4"
-        xmlns:utils1="clr-namespace:Demo4.Utils"
         mc:Ignorable="d" 
         d:DataContext="{Binding Source={d:DesignInstance Type=demo:MainWindowViewModel, IsDesignTimeCreatable=False}}"
         Title="MainWindow" Height="600" Width="800">
-    
-    <Window.Resources>
-        <utils1:DataGridRowToIndexConverter x:Key="DataGridRowToIndexConverter" Offset="1" />
-    </Window.Resources>
 
     <Grid HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
@@ -34,103 +29,85 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <DataGrid Grid.ColumnSpan="3" Grid.Row="0"
+            <ListView Grid.ColumnSpan="3" Grid.Row="0"
                       ItemsSource="{Binding Orders}" 
-                      AutoGenerateColumns="false" IsReadOnly="True"
-                      RowDetailsVisibilityMode="Visible"
-                      HorizontalAlignment="Stretch"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                       VerticalAlignment="Stretch">
-                <DataGrid.Columns>
-
-                    <DataGridTextColumn Header="Order #" Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=DataGridRow}, Converter={StaticResource DataGridRowToIndexConverter}, Mode=OneWay}" Width="*" />
-                    
-                    <DataGridTemplateColumn Header="del" Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Button Content="x" 
-                                            Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
-                                            CommandParameter="{Binding}"
-                                            HorizontalAlignment="Right" 
-                                            Width="30"
-                                            Margin="5" />
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                </DataGrid.Columns>
-                
-                <DataGrid.RowDetailsTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
+                        
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                            <DataGrid d:DataContext="{d:DesignInstance demo:Order}"
+                            <DockPanel Grid.Row="0" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Order #" DockPanel.Dock="Left" Margin="10,5,0,5" />
+                                <TextBlock Text="{Binding Id}" DockPanel.Dock="Left" Margin="5" />
+                                <Button Content="x" 
+                                        Command="{Binding DataContext.DeleteOrderCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                                        CommandParameter="{Binding}"
+                                        DockPanel.Dock="Right"
+                                        HorizontalAlignment="Right"
+                                        Width="30"
+                                        Margin="5" />
+                            </DockPanel>
+
+                            <StackPanel Grid.Row="1"
+                                Orientation="Vertical" HorizontalAlignment="Stretch">
+
+                                <ListView d:DataContext="{d:DesignInstance demo:Order}"
                                       ItemsSource="{Binding LineItems}"
-                                      AutoGenerateColumns="false" IsReadOnly="True"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch">
-                                <DataGrid.Columns>
-                                    
-                                    <DataGridTextColumn Header="Line #" 
-                                                        d:DataContext="{d:DesignInstance demo:LineItem}"
-                                                        Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=DataGridRow}, Converter={StaticResource DataGridRowToIndexConverter}, Mode=OneWay}" 
-                                                        Width="SizeToCells" />
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <StackPanel Grid.Row="0"
+                                                            Orientation="Horizontal" HorizontalAlignment="Stretch">
 
-                                    <DataGridTemplateColumn Header="Qty" Width="*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Grid>
-                                                    <TextBox d:DataContext="{d:DesignInstance demo:LineItem}" Text="{Binding Quantity}" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                                    <TextBlock Text="Line #" Margin="10,5,0,5"/>
+                                                    <TextBlock Text="{Binding Index}" Margin="5" />
 
-                                    <DataGridTemplateColumn Header="Price" Width="*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Grid>
-                                                    <TextBox d:DataContext="{d:DesignInstance demo:LineItem}" Text="{Binding Price, StringFormat=$0.00}" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                                    <TextBlock Text="Qty" Margin="10,5,5,5" />
+                                                    <TextBox   Text="{Binding Quantity}" Width="25" Margin="5" />
 
-                                    <DataGridTextColumn Header="Cost" 
-                                                        d:DataContext="{d:DesignInstance demo:LineItem}"
-                                                        Binding="{Binding Cost, StringFormat=$0.00, Mode=OneWay}" 
-                                                        Width="*" />
-                                    
-                                    <DataGridTemplateColumn Header="del" Width="Auto">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Grid>
+                                                    <TextBlock Text="Price" Margin="10,5,5,5" />
+                                                    <TextBox   Text="{Binding Price, StringFormat=$0.00}" Width="50" Margin="5" />
+
+                                                    <TextBlock Text="Cost" Margin="10,5,5,5" />
+                                                    <TextBlock Text="{Binding Cost, StringFormat=$0.00}" Width="50" Margin="5" />
+
                                                     <Button Content="x" 
-                                                            Command="{Binding DataContext.DeleteLineItemCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
-                                                            CommandParameter="{Binding}"
-                                                            HorizontalAlignment="Right" 
-                                                            Width="30"
-                                                            Margin="5" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                                                        Command="{Binding DataContext.DeleteLineItemCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
+                                                        CommandParameter="{Binding}"
+                                                        HorizontalAlignment="Right" 
+                                                        Width="30"
+                                                        Margin="5" />
+                                                    
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
 
-                            <Button Content="+ Line" 
+                                <Button Content="+ Line" 
                                     Command="{Binding DataContext.AddLineItemCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
                                     CommandParameter="{Binding}"
                                     HorizontalAlignment="Left"
-                                    Margin="10" />
+                                    Margin="5" />
 
-                        </StackPanel>
+                            </StackPanel>
 
+                        </Grid>
+                        
                     </DataTemplate>
-                </DataGrid.RowDetailsTemplate>
-            </DataGrid>
-            
+                </ListView.ItemTemplate>
+            </ListView>
+
             <Button Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" 
                     Content="+ Order" 
                     Command="{Binding DataContext.AddOrderCommand, RelativeSource={RelativeSource AncestorType=demo:MainWindow, Mode=FindAncestor}}"
@@ -144,7 +121,7 @@
             <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding TotalItems}" Margin="10,5" />
 
             <TextBlock Grid.Column="0" Grid.Row="4" Text="Total Cost" Margin="10,5" />
-            <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding TotalCost, StringFormat=$0.00}" Margin="10,5" HorizontalAlignment="Right" />
+            <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding TotalCost, StringFormat=$0.00}" Margin="10,5" />
 
         </Grid>
 

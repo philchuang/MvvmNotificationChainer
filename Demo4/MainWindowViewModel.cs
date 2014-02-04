@@ -71,7 +71,7 @@ namespace Demo4
         [CommandExecuteMethod]
         private void AddOrder ()
         {
-            Orders.Add (new Order ());
+            Orders.Add (new Order { Id = Orders.Any () ? Orders.Select (o => o.Id).Max () + 1 : 1 });
         }
 
         [CommandProperty (commandType: typeof (DelegateCommand<Order>), paramType: typeof (Order))]
@@ -97,7 +97,7 @@ namespace Demo4
         [CommandExecuteMethod]
         private void AddLineItem (Order order)
         {
-            order.LineItems.Add (new LineItem {Order = order});
+            order.LineItems.Add (new LineItem { Index = order.LineItems.Any () ? order.LineItems.Select (o => o.Index).Max () + 1 : 1, Order = order });
         }
 
         [CommandProperty (commandType: typeof (DelegateCommand<LineItem>), paramType: typeof (LineItem))]
@@ -121,6 +121,17 @@ namespace Demo4
 
     public class Order : NotifyPropertyChangedBase
     {
+        private int myId;
+        public int Id
+        {
+            get { return myId; }
+            set
+            {
+                myId = value;
+                RaisePropertyChanged ();
+            }
+        }
+
         private ObservableCollection<LineItem> myLineItems = new ObservableCollection<LineItem> ();
         public ObservableCollection<LineItem> LineItems
         {
@@ -171,6 +182,17 @@ namespace Demo4
 
     public class LineItem : NotifyPropertyChangedBase
     {
+        private int myIndex;
+        public int Index
+        {
+            get { return myIndex; }
+            set
+            {
+                myIndex = value;
+                RaisePropertyChanged ();
+            }
+        }
+
         private int myQuantity;
         public int Quantity
         {

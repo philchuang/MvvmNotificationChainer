@@ -164,6 +164,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             {
                 myDeepChainManagers[propName] = mgr = new NotificationChainManager ();
                 myDeepChainGetters[propName] = _ => propGetter.Compile ().Invoke ();
+                var currentValue = (T1) myDeepChainGetters[propName] (null);
+                if (currentValue != null)
+                    mgr.Observe (currentValue);
             }
 
             return mgr;
@@ -194,7 +197,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
                 myDeepChainManagers[propName] = mgr = new CollectionNotificationChainManager ();
-                myDeepChainGetters[propName] = parent => collectionPropGetter.Compile ().Invoke ();
+                myDeepChainGetters[propName] = _ => collectionPropGetter.Compile ().Invoke ();
+                var currentValue = (ObservableCollection<T1>) myDeepChainGetters[propName] (null);
+                if (currentValue != null)
+                    ((ICollectionNotificationChainManager) mgr).ObserveCollection (currentValue);
             }
 
             return (ICollectionNotificationChainManager) mgr;
