@@ -182,6 +182,49 @@ Tells the chain to watch for *Price* to change
 
 Tells the chain that it is done being configured, and not to allow any further configuration changes.
 
+Regular Expression matching
+----------------
+
+`NotificationChain` can also use regexes for property name matching:
+
+```C#
+private int myNumber1;
+public int Number1
+{
+	get { return myNumber1; }
+	set
+	{
+		myNumber1 = value;
+		RaisePropertyChanged("Number1");
+	}
+}
+
+private int myNumber2;
+public int Number2
+{
+	get { return myNumber2; }
+	set
+	{
+		myNumber2 = value;
+		RaisePropertyChanged("Number2");
+	}
+}
+
+public int SumOfNumbers
+{
+	get
+	{
+		myNotificationChainManager.CreateOrGet()
+		                          .Configure (cn => cn.OnRegex (@"^Number[0-9]+$")
+		                                              .Finish ());
+		
+		return Number1 + Number2;
+	}
+}
+```
+
+*SumOfNumbers* will notify when *Number1* or *Number2* (or anything matching the regex) notifies.
+
 Deep Observation
 ----------------
 
@@ -217,7 +260,7 @@ public String UserFirstName
 Collection Observation
 -----------------------------
 
-ObservableCollections can be observed, as well as the items inside the collection:
+`ObservableCollection`s can be observed, as well as the items inside the collection:
 
 ```C#
 private ObservableCollection<LineItem> myLineItems;
@@ -255,9 +298,9 @@ public decimal TotalCost
 	}
 }
 ```
-*TotalLineItems* will notify when when the LineItems collection is set, or when items are added/removed. The CollectionChanged event is being observed.
+*TotalLineItems* will notify when when the *LineItems* collection is set, or when items are added/removed. The `CollectionChanged` event is being observed.
 
-*TotalCost* will notify when LineItems is set, or when items are added/removed, or when any LineItem's Cost is modified. The CollectionChanged event is being observed, but also, when LineItems are added/removed to the collection, their PropertyChanged events are observed.
+*TotalCost* will also notify when *LineItems* is set, or when items are added/removed, but also when any LineItem's *Cost* is modified. The `CollectionChanged` event is being observed, but also when LineItems are added/removed to the collection, their `PropertyChanged` events are observed.
 
 Integrate with MVVM ICommands
 -----------------------------
@@ -326,7 +369,7 @@ Implemented Features:
 	* For now, can't do deep chaining of nested collections
 * Compile-time property name safety for easy refactoring
 * Creates & configures just once per chain, trivial performance hit on initialization
-* Bolt-on code: No need to change base classes, or extensively modify existing ViewModels
+* Bolt-on code: No need to change base classes, or extensively modify existing classes
 
 To Dos:
 
