@@ -1,5 +1,5 @@
-* consider removing interfaces (unnecessary)
 * support other collections which implement INotifyCollectionChanged?
+
 * integration tests
 	* 3 deep chain
 	* 4 deep chain

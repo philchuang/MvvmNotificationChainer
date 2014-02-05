@@ -19,7 +19,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// The Manager that publishes to this chain.
         /// </summary>
-        public INotificationChainManager ParentManager { get; set; }
+        public NotificationChainManager ParentManager { get; set; }
 
         /// <summary>
         /// Name of the property that depends on other properties (e.g. Cost depends on Quantity and Price)
@@ -60,7 +60,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         /// <param name="parentManager"></param>
         /// <param name="dependentPropertyName">Name of the depending property</param>
-        public NotificationChain (INotificationChainManager parentManager, String dependentPropertyName)
+        public NotificationChain (NotificationChainManager parentManager, String dependentPropertyName)
         {
             parentManager.ThrowIfNull ("parentManager");
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");

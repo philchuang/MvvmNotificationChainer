@@ -14,7 +14,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// Prevents duplication of NotificationChains by dependent property name.
     /// When disposing, calls Dispose on all NotificationChains.
     /// </summary>
-    public class NotificationChainManager : INotificationChainManager
+    public class NotificationChainManager
     {
         public IEnumerable<Object> ObservedObjects { get { return myObservedObjects.Keys.Select (o => o); } }
 
@@ -28,7 +28,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Map of dependent property name to notification chain manager
         /// </summary>
-        private Dictionary<String, INotificationChainManager> myDeepChainManagers = new Dictionary<String, INotificationChainManager> ();
+        private Dictionary<String, NotificationChainManager> myDeepChainManagers = new Dictionary<String, NotificationChainManager> ();
 
         /// <summary>
         /// Map of dependent property name to function to get that property value
@@ -154,12 +154,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
         // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter
 
-        public INotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+        public NotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
             where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            INotificationChainManager mgr;
+            NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
                 myDeepChainManagers[propName] = mgr = new NotificationChainManager ();
@@ -172,13 +172,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return mgr;
         }
 
-        public INotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+        public NotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
             where T0 : INotifyPropertyChanged
             where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
 
-            INotificationChainManager mgr;
+            NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
                 mgr = myDeepChainManagers[propName] = new NotificationChainManager ();
@@ -188,22 +188,22 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return mgr;
         }
 
-        public ICollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
+        public CollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
             where T1 : class
         {
             var propName = collectionPropGetter.GetPropertyName ();
 
-            INotificationChainManager mgr;
+            NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
             {
                 myDeepChainManagers[propName] = mgr = new CollectionNotificationChainManager ();
                 myDeepChainGetters[propName] = _ => collectionPropGetter.Compile ().Invoke ();
                 var currentValue = (ObservableCollection<T1>) myDeepChainGetters[propName] (null);
                 if (currentValue != null)
-                    ((ICollectionNotificationChainManager) mgr).ObserveCollection (currentValue);
+                    ((CollectionNotificationChainManager) mgr).ObserveCollection (currentValue);
             }
 
-            return (ICollectionNotificationChainManager) mgr;
+            return (CollectionNotificationChainManager) mgr;
         }
 
         public NotificationChain Get ([CallerMemberName] String dependentPropertyName = null)
@@ -314,7 +314,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 foreach (var chain in myChains.Values)
                     chain.Publish (sender, args);
 
-                INotificationChainManager manager;
+                NotificationChainManager manager;
                 if (!myDeepChainManagers.TryGetValue (args.PropertyName, out manager)) return;
 
                 INotifyPropertyChanged previousPropertyValue = null;
@@ -326,16 +326,16 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
                 if (previousPropertyValue != null)
                 {
-                    if (manager is ICollectionNotificationChainManager)
-                        ((ICollectionNotificationChainManager) manager).StopObservingCollection ((INotifyCollectionChanged) previousPropertyValue);
+                    if (manager is CollectionNotificationChainManager)
+                        ((CollectionNotificationChainManager) manager).StopObservingCollection ((INotifyCollectionChanged) previousPropertyValue);
                     else
                         manager.StopObserving (previousPropertyValue);
                 }
 
                 if (currentPropertyValue != null)
                 {
-                    if (manager is ICollectionNotificationChainManager)
-                        ((ICollectionNotificationChainManager) manager).ObserveCollection ((INotifyCollectionChanged) currentPropertyValue);
+                    if (manager is CollectionNotificationChainManager)
+                        ((CollectionNotificationChainManager) manager).ObserveCollection ((INotifyCollectionChanged) currentPropertyValue);
                     else
                         manager.Observe (currentPropertyValue);
                 }

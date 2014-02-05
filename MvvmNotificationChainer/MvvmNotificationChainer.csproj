@@ -44,8 +44,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICollectionNotificationChainManager.cs" />
-    <Compile Include="INotificationChainManager.cs" />
     <Compile Include="NotificationChain.cs" />
     <Compile Include="CollectionNotificationChainManager.cs" />
     <Compile Include="NotificationChainManager.cs" />

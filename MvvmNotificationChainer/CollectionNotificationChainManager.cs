@@ -12,8 +12,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// Prevents duplication of NotificationChains by dependent property name.
     /// When disposing, calls Dispose on all NotificationChains.
     /// </summary>
-    public class CollectionNotificationChainManager : NotificationChainManager, ICollectionNotificationChainManager
+    public class CollectionNotificationChainManager : NotificationChainManager
     {
+        /// <summary>
+        /// The proeprty name to use for the collection being observed by this CollectionNotificationChainManager
+        /// </summary>
         public const String ObservedCollectionPropertyName = ".";
 
         /// <summary>
