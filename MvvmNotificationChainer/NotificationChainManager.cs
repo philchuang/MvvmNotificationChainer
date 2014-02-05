@@ -62,7 +62,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         {
             notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
 
-            ObserveINotifyPropertyChanged (notifyingObject);
+            Observe (notifyingObject);
         }
 
         public NotificationChainManager (
@@ -71,7 +71,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Action<PropertyChangedEventHandler> removeEventAction)
             : this ()
         {
-            ObservePropertyChangedEventHandlers (notifyingObject, addEventAction, removeEventAction);
+            Observe (notifyingObject, addEventAction, removeEventAction);
         }
 
         public virtual void Dispose ()
@@ -107,6 +107,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             IsDisposed = true;
         }
 
+        /// <summary>
+        /// Specifies a default action to add to a new NotificationChain.
+        /// </summary>
+        /// <param name="onNotifyingPropertyChanged"></param>
+        /// <returns></returns>
         public void AddDefaultCall (Action onNotifyingPropertyChanged)
         {
             onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
@@ -116,6 +121,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             AddDefaultCall ((sender, notifyingProperty, dependentProperty) => onNotifyingPropertyChanged ());
         }
 
+        /// <summary>
+        /// Specifies an action to invoke when a notifying property is changed. Multiple actions can be invoked.
+        /// </summary>
+        /// <param name="onNotifyingPropertyChanged"></param>
+        /// <returns></returns>
         public void AddDefaultCall (NotificationChainCallback onNotifyingPropertyChanged)
         {
             onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
@@ -125,6 +135,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myDefaultCallbacks.Add (onNotifyingPropertyChanged);
         }
 
+        /// <summary>
+        /// Creates a new NotificationChain for the given property, or returns an existing instance
+        /// </summary>
+        /// <param name="propGetter">Lambda expression for the property that depends on other properties</param>
+        /// <returns></returns>
         public NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter)
         {
             propGetter.ThrowIfNull ("propGetter");
@@ -135,6 +150,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return CreateOrGet (propGetter.GetPropertyName ());
         }
 
+        /// <summary>
+        /// Creates a new NotificationChain for the given property, or returns an existing instance
+        /// </summary>
+        /// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
+        /// <returns></returns>
         public NotificationChain CreateOrGet ([CallerMemberName] String dependentPropertyName = null)
         {
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
@@ -153,8 +173,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         }
 
         // TODO consolidate CreateOrGetDeepManager methods? Only diff is propGetter
-
-        public NotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
+        
+        /// <summary>
+        /// Creates a new NotificationChainManager for the given property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="propGetter"></param>
+        /// <returns></returns>
+        internal NotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
             where T1 : class
         {
             var propName = propGetter.GetPropertyName ();
@@ -172,7 +198,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return mgr;
         }
 
-        public NotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
+        /// <summary>
+        /// Creates a new NotificationChainManager for the given property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T0"></typeparam>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="propGetter"></param>
+        /// <returns></returns>
+        internal NotificationChainManager CreateOrGetManager<T0, T1> (Expression<Func<T0, T1>> propGetter)
             where T0 : INotifyPropertyChanged
             where T1 : class
         {
@@ -188,7 +221,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return mgr;
         }
 
-        public CollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
+        /// <summary>
+        /// Creates a new NotificationChainManager for the given collection property, or returns an existing instance
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="collectionPropGetter"></param>
+        /// <returns></returns>
+        internal CollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
             where T1 : class
         {
             var propName = collectionPropGetter.GetPropertyName ();
@@ -206,6 +245,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return (CollectionNotificationChainManager) mgr;
         }
 
+        /// <summary>
+        /// Creates a new NotificationChain for the calling property
+        /// </summary>
+        /// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
+        /// <returns></returns>
         public NotificationChain Get ([CallerMemberName] String dependentPropertyName = null)
         {
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
@@ -216,6 +260,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             return myChains.TryGetValue (dependentPropertyName, out chain) ? chain : null;
         }
 
+        /// <summary>
+        /// Clears a NotificationChain for the calling property
+        /// </summary>
+        /// <param name="dependentPropertyName">Name of the property that depends on other properties</param>
+        /// <returns></returns>
         public void Clear ([CallerMemberName] String dependentPropertyName = null)
         {
             dependentPropertyName.ThrowIfNull ("dependentPropertyName");
@@ -229,7 +278,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             myChains.Remove (dependentPropertyName);
         }
 
-        public virtual void Observe (Object notifyingObject)
+        /// <summary>
+        /// Attempt to determine how to observe the given notifying object, then begin observing it.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        public void Observe (Object notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
 
@@ -244,12 +297,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             throw new InvalidOperationException ("Unable to observe an object of type \"{0}\"".FormatWith (notifyingObject.GetType ().FullName));
         }
 
-        public virtual void Observe (INotifyPropertyChanged notifyingObject)
-        {
-            ObserveINotifyPropertyChanged (notifyingObject);
-        }
-
-        private void ObserveINotifyPropertyChanged (INotifyPropertyChanged notifyingObject)
+        /// <summary>
+        /// Begins observing the given notifying object.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        public void Observe (INotifyPropertyChanged notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
 
@@ -258,15 +310,13 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Observe (notifyingObject, h => notifyingObject.PropertyChanged += h, h => notifyingObject.PropertyChanged -= h);
         }
 
-        public virtual void Observe (
-            Object notifyingObject,
-            Action<PropertyChangedEventHandler> addEventAction,
-            Action<PropertyChangedEventHandler> removeEventAction)
-        {
-            ObservePropertyChangedEventHandlers (notifyingObject, addEventAction, removeEventAction);
-        }
-
-        private void ObservePropertyChangedEventHandlers (
+        /// <summary>
+        /// Begins observing the given notifying object.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        /// <param name="addEventAction"></param>
+        /// <param name="removeEventAction"></param>
+        public void Observe (
             Object notifyingObject,
             Action<PropertyChangedEventHandler> addEventAction,
             Action<PropertyChangedEventHandler> removeEventAction)
@@ -286,7 +336,11 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             addEventAction (myPropertyChangedEventHandler);
         }
 
-        public virtual void StopObserving (Object notifyingObject)
+        /// <summary>
+        /// Stop observing the given notifying object.
+        /// </summary>
+        /// <param name="notifyingObject"></param>
+        public void StopObserving (Object notifyingObject)
         {
             notifyingObject.ThrowIfNull ("notifyingObject");
 
@@ -303,6 +357,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             }
         }
 
+        /// <summary>
+        /// Pushes PropertyChangedEventArgs input for processing. Normally called by the PropertyChanged event of the current observed object.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns>whether or not the callbacks were triggered</returns>
         public void Publish (Object sender, PropertyChangedEventArgs args)
         {
             sender.ThrowIfNull ("sender");

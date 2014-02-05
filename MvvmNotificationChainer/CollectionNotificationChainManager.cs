@@ -55,6 +55,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             base.Dispose ();
         }
 
+        /// <summary>
+        /// Begins observing the given notifying collection.
+        /// </summary>
+        /// <param name="notifyingCollection"></param>
         public void ObserveCollection (INotifyCollectionChanged notifyingCollection)
         {
             notifyingCollection.ThrowIfNull ("notifyingCollection");
@@ -74,6 +78,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                     base.Observe (item);
         }
 
+        /// <summary>
+        /// Stop observing the given notifying collection.
+        /// </summary>
+        /// <param name="notifyingCollection"></param>
         public void StopObservingCollection (INotifyCollectionChanged notifyingCollection)
         {
             notifyingCollection.ThrowIfNull ("notifyingCollection");
