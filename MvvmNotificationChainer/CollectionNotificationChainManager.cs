@@ -73,9 +73,16 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             notifyingCollection.CollectionChanged += myCollectionChangedEventHandler;
 
-            if (notifyingCollection is IEnumerable)
-                foreach (var item in (IEnumerable) notifyingCollection)
-                    base.Observe (item);
+            var enumerable = notifyingCollection as IEnumerable;
+            if (enumerable != null)
+            {
+                foreach (var item in enumerable)
+                {
+                    var inpc = item as INotifyPropertyChanged;
+                    if (inpc != null)
+                        base.Observe (inpc);
+                }
+            }
         }
 
         /// <summary>
@@ -96,9 +103,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             {
                 removeHandler ();
 
-                if (notifyingCollection is IEnumerable)
-                    foreach (var item in (IEnumerable) notifyingCollection)
+                var enumerable = notifyingCollection as IEnumerable;
+                if (enumerable != null)
+                {
+                    foreach (var item in enumerable)
+                    {
                         base.StopObserving (item);
+                    }
+                }
 
                 myObservedCollections.Remove (notifyingCollection);
             }
@@ -110,8 +122,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 foreach (var oldItem in e.OldItems)
                     base.StopObserving (oldItem);
             if (e.NewItems != null)
+            {
                 foreach (var newItem in e.NewItems)
-                    base.Observe (newItem);
+                {
+                    var inpc = newItem as INotifyPropertyChanged;
+                    if (inpc != null)
+                        base.Observe (inpc);
+                }
+            }
 
             Publish (sender, new PropertyChangedEventArgs (ObservedCollectionPropertyName));
         }

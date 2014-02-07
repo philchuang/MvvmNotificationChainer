@@ -16,6 +16,68 @@ using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 namespace MvvmNotificationChainer.UnitTests
 {
+    public class when_testing_collection_with_simple_type : when_using_INotifyPropertyChanged
+    {
+        public class ViewModel : NotifyPropertyChangedBase
+        {
+            private ObservableCollection<String> myStringCollection;
+            public ObservableCollection<String> StringCollection
+            {
+                get { return myStringCollection; }
+                set
+                {
+                    myStringCollection = value;
+                    RaisePropertyChanged ();
+                }
+            }
+
+            [NotificationChainProperty]
+            public int StringCollectionCount
+            {
+                get
+                {
+                    myNotificationChainManager.CreateOrGet ()
+                                              .Configure (cn => cn.OnCollection (() => StringCollection).Finish ());
+
+                    return myStringCollection != null ? myStringCollection.Count : 0;
+                }
+            }
+        }
+
+        private ViewModel myViewModel;
+
+        protected override void Establish_context ()
+        {
+            myViewModel = new ViewModel ();
+            myViewModel.PropertyChanged += OnPropertyChanged;
+
+            //myViewModel.StringCollection = new ObservableCollection<String>();
+            myExpectedNotifications.Add ("StringCollection");
+            myExpectedNotifications.Add ("StringCollectionCount");
+            //myViewModel.StringCollection.Add("Hello");
+            myExpectedNotifications.Add ("StringCollectionCount");
+            //myViewModel.StringCollection.Add("World");
+            myExpectedNotifications.Add ("StringCollectionCount");
+        }
+
+        protected virtual void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
+        { myActualNotifications.Add (e.PropertyName); }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myViewModel.StringCollection = new ObservableCollection<String> ();
+                myViewModel.StringCollection.Add ("Hello");
+                myViewModel.StringCollection.Add ("World");
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+    }
+
     public abstract class when_testing_collection<TViewModel, TLineItem> : when_using_INotifyPropertyChanged
         where TViewModel : when_testing_collection_IViewModel
         where TLineItem : when_testing_2deep_property_dependency_chain_ILineItem
