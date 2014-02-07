@@ -144,7 +144,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             if (IsFinished || IsDisposed) return this;
 
-            return On (propGetter.GetPropertyName ());
+            return On (propGetter.GetPropertyOrFieldName ());
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             if (IsFinished || IsDisposed) return this;
 
-            return On (propGetter.GetPropertyName ());
+            return On (propGetter.GetPropertyOrFieldName ());
         }
 
         /// <summary>

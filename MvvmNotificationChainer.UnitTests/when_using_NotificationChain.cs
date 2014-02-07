@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Com.PhilChuang.Utils.MvvmNotificationChainer;
@@ -225,6 +226,74 @@ namespace MvvmNotificationChainer.UnitTests
         {
             Assert.IsFalse (myChainCallbackCalled);
             Assert.AreEqual (0, myChainNotifications.Count);
+        }
+    }
+
+    public class when_using_NotificationChain_On_with_Property : when_using_NotificationChain
+    {
+        public String Property { get; set; }
+
+        protected Expression<Func<String>> m_Expression;
+        protected String m_ExpectedPropertyName;
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            m_Expression = () => Property;
+            m_ExpectedPropertyName = "Property";
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.On (m_Expression);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_PropertyName_should_be_observed ()
+        {
+            Assert.IsTrue (myChain.ObservedPropertyNames.Contains (m_ExpectedPropertyName));
+        }
+    }
+
+    public class when_using_NotificationChain_On_with_Field : when_using_NotificationChain
+    {
+        private String myProperty;
+
+        protected Expression<Func<String>> m_Expression;
+        protected String m_ExpectedPropertyName;
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            m_Expression = () => myProperty;
+            m_ExpectedPropertyName = "myProperty";
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.On (m_Expression);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_PropertyName_should_be_observed ()
+        {
+            Assert.IsTrue (myChain.ObservedPropertyNames.Contains (m_ExpectedPropertyName));
         }
     }
 }

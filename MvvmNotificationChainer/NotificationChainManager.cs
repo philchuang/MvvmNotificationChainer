@@ -147,7 +147,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             if (IsDisposed) return null;
 
             // ReSharper disable once ExplicitCallerInfoArgument
-            return CreateOrGet (propGetter.GetPropertyName ());
+            return CreateOrGet (propGetter.GetPropertyOrFieldName ());
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         internal NotificationChainManager CreateOrGetManager<T1> (Expression<Func<T1>> propGetter)
             where T1 : class
         {
-            var propName = propGetter.GetPropertyName ();
+            var propName = propGetter.GetPropertyOrFieldName ();
 
             NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
@@ -209,7 +209,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             where T0 : INotifyPropertyChanged
             where T1 : class
         {
-            var propName = propGetter.GetPropertyName ();
+            var propName = propGetter.GetPropertyOrFieldName ();
 
             NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))
@@ -230,7 +230,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         internal CollectionNotificationChainManager CreateOrGetCollectionManager<T1> (Expression<Func<ObservableCollection<T1>>> collectionPropGetter)
             where T1 : class
         {
-            var propName = collectionPropGetter.GetPropertyName ();
+            var propName = collectionPropGetter.GetPropertyOrFieldName ();
 
             NotificationChainManager mgr;
             if (!myDeepChainManagers.TryGetValue (propName, out mgr))

@@ -103,6 +103,34 @@ namespace Com.PhilChuang.Utils
         {
             return GetPropertyInfo (self).Name;
         }
+
+        public static String GetPropertyOrFieldName<T> (this Expression<Func<T>> self)
+        {
+            if (self == null) throw new ArgumentNullException ("self");
+
+            // handles () => SomeProperty or () => mySomeProperty
+            if (self.Body.NodeType == ExpressionType.MemberAccess)
+            {
+                var memberExpr = (MemberExpression) self.Body;
+                return memberExpr.Member.Name;
+            }
+
+            throw new Exception (String.Format ("Expected MemberAccess expression, got {0}", self.Body.NodeType));
+        }
+
+        public static String GetPropertyOrFieldName<T, V> (this Expression<Func<T, V>> self)
+        {
+            if (self == null) throw new ArgumentNullException ("self");
+
+            // handles () => SomeProperty or () => mySomeProperty
+            if (self.Body.NodeType == ExpressionType.MemberAccess)
+            {
+                var memberExpr = (MemberExpression) self.Body;
+                return memberExpr.Member.Name;
+            }
+
+            throw new Exception (String.Format ("Expected MemberAccess expression, got {0}", self.Body.NodeType));
+        }
     }
 }
 

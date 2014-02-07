@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Com.PhilChuang.Utils;
+using Com.PhilChuang.Utils.MvvmNotificationChainer;
 using Demo.Utils;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -348,5 +349,49 @@ namespace MvvmNotificationChainer.UnitTests
 
     public class when_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem : when_using_MvvmNotificationChainer_and_testing_simple_chain_ViewModel, when_testing_2deep_property_dependency_chain_ILineItem
     {
+    }
+
+    public class when_testing_2deep_field_dependency_chain : when_using_INotifyPropertyChanged
+    {
+        private when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem myLineItem;
+        private NotificationChainManager myNotificationChainManager;
+
+        private String m_DependentPropertyName;
+
+        protected override void Establish_context ()
+        {
+            myLineItem = new when_not_using_MvvmNotificationChainer_and_testing_2deep_chain_LineItem();
+            m_DependentPropertyName = Guid.NewGuid ().ToString ();
+
+            //myLineItem.Quantity = 1;
+            myExpectedNotifications.Add (m_DependentPropertyName); // for Quantity
+            myExpectedNotifications.Add (m_DependentPropertyName); // for Cost
+            //myLineItem.Price = 99.99m;
+            myExpectedNotifications.Add (m_DependentPropertyName); // for Price
+            myExpectedNotifications.Add (m_DependentPropertyName); // for Cost
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myNotificationChainManager = new NotificationChainManager();
+                myNotificationChainManager.AddDefaultCall(OnNotifyingPropertyChanged);
+                myNotificationChainManager.CreateOrGet (m_DependentPropertyName)
+                                          .On (() => myLineItem, li => li.Quantity)
+                                          .On (() => myLineItem, li => li.Price)
+                                          .On (() => myLineItem, li => li.Cost);
+
+                myLineItem.Quantity = 1;
+                myLineItem.Price = 99.99m;
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        private void OnNotifyingPropertyChanged (object sender, string notifyingproperty, string dependentproperty)
+        { myActualNotifications.Add (dependentproperty); }
     }
 }
