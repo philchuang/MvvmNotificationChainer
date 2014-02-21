@@ -67,7 +67,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             ParentManager = parentManager;
             DependentPropertyName = dependentPropertyName;
-            myFireCallbacksCallback = (sender, notifyingProperty, dependentProperty) => FireCallbacks (sender, notifyingProperty, DependentPropertyName);
+            myFireCallbacksCallback = (sender, notifyingProperty, dependentProperty) => Execute (sender, notifyingProperty);
         }
 
         public void Dispose ()
@@ -759,11 +759,28 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Indicates that the chain has been fully defined and prevents further configuration.
         /// </summary>
-        public void Finish ()
+        /// <param name="executeImmediately"></param>
+        public void Finish (bool executeImmediately = false)
         {
             if (IsFinished) return;
 
             IsFinished = true;
+
+            if (executeImmediately)
+                Execute (null, null);
+        }
+
+        /// <summary>
+        /// Indicates that the chain has been fully defined and prevents further configuration,
+        /// also immediately executes all calls with the given sender and propertyName
+        /// </summary>
+        public void Finish (Object sender, String propertyName)
+        {
+            if (IsFinished) return;
+
+            IsFinished = true;
+
+            Execute (sender, propertyName);
         }
 
         /// <summary>
@@ -779,14 +796,19 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 if (!myObservedRegexes.Any (r => r.IsMatch (args.PropertyName))) return false;
             }
 
-            FireCallbacks (sender, args.PropertyName, DependentPropertyName);
+            Execute (sender, args.PropertyName);
             return true;
         }
 
-        private void FireCallbacks (Object sender, String notifyingProperty, String dependentProperty)
+        public void Execute ()
+        {
+            Execute (null, null);
+        }
+
+        public void Execute (Object sender, String notifyingProperty)
         {
             foreach (var c in myCallbacks.ToList ())
-                c (sender, notifyingProperty, dependentProperty);
+                c (sender, notifyingProperty, DependentPropertyName);
         }
     }
 }

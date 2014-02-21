@@ -337,7 +337,8 @@ private bool CanDoSomething ()
 	                                              // clear default calls since we don't want to call RaisePropertyChanged
 	                                              .AndClearCalls ()
 	                                              .AndCall (DoSomethingCommand.RaiseCanExecuteChanged)
-	                                              .Finish ());
+	                                              // Executes the callbacks right away 
+	                                              .Finish (true));
 
     return HasInternetConnection;
 }
@@ -364,6 +365,8 @@ Implemented Features:
 
 * Performs PropertyChanged for a dependent property whenever a watched property changes
 	* Can also use Regular Expressions to trigger a chain
+* Can fire chain callbacks immediately after configuration via Finish method
+* Can fire chain callbacks manually via Execute method
 * Supports notification chains 4 levels deep
 * Support for observing `NotifyCollectionChangedEventHandler`
 	* For now, can't do deep chaining of nested collections

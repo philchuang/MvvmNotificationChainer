@@ -10,7 +10,7 @@
 		<projectUrl>http://github.com/philchuang/MvvmNotificationChainer</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>$description$</description>
-		<releaseNotes>ability to deep chain on fields</releaseNotes>
+		<releaseNotes>added Chain/Manager Execute methods</releaseNotes>
 		<copyright>Copyright 2014</copyright>
 		<tags>MVVM INotifyPropertyChanged PCL</tags>
 	</metadata>

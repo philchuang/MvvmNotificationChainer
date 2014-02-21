@@ -75,7 +75,7 @@ namespace Demo3
                                       .Configure (cn => cn.AndClearCalls ()
                                                           .On (() => Manager1)
                                                           .AndCall (Manager1Employee1Command.RaiseCanExecuteChanged)
-                                                          .Finish ());
+                                                          .Finish (true));
 
             return myManager1 != null;
         }
@@ -131,7 +131,7 @@ namespace Demo3
                                       .Configure (cn => cn.AndClearCalls ()
                                                           .On (() => Manager1)
                                                           .AndCall (Manager1Employee2Command.RaiseCanExecuteChanged)
-                                                          .Finish ());
+                                                          .Finish (true));
 
             return myManager1 != null;
         }
@@ -237,7 +237,7 @@ namespace Demo3
                                       .Configure (cn => cn.AndClearCalls ()
                                                           .On (() => Manager2)
                                                           .AndCall (Manager2Employee1Command.RaiseCanExecuteChanged)
-                                                          .Finish ());
+                                                          .Finish (true));
 
             return myManager2 != null;
         }
@@ -293,7 +293,7 @@ namespace Demo3
                                       .Configure (cn => cn.AndClearCalls ()
                                                           .On (() => Manager2)
                                                           .AndCall (Manager2Employee2Command.RaiseCanExecuteChanged)
-                                                          .Finish ());
+                                                          .Finish (true));
 
             return myManager2 != null;
         }

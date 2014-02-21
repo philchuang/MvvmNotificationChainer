@@ -401,5 +401,51 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 }
             }
         }
+
+        /// <summary>
+        /// Calls Execute on all chains with the given parameters
+        /// </summary>
+        public void ExecuteAllChains ()
+        {
+            ExecuteAllChains (null, String.Empty);
+        }
+
+        /// <summary>
+        /// Calls Execute on all chains with the given parameters
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="propertyName"></param>
+        public void ExecuteAllChains (Object sender, String propertyName)
+        {
+            ExecuteAllChains (sender, new PropertyChangedEventArgs (propertyName));
+        }
+
+        /// <summary>
+        /// Calls Execute on all chains with the given parameters
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void ExecuteAllChains (Object sender, PropertyChangedEventArgs args)
+        {
+            sender.ThrowIfNull ("sender");
+
+            if (IsDisposed) return;
+
+            lock (lock_Publish)
+            {
+                var keys = myChains.Keys.Union (myDeepChainManagers.Keys).Distinct ().ToList ();
+
+                foreach (var key in keys)
+                {
+                    NotificationChain chain;
+                    if (myChains.TryGetValue (key, out chain))
+                        chain.Execute (sender, args.PropertyName);
+
+                    NotificationChainManager mgr;
+                    if (myDeepChainManagers.TryGetValue (key, out mgr))
+                        mgr.ExecuteAllChains (sender, args);
+                }
+            }
+        }
     }
 }

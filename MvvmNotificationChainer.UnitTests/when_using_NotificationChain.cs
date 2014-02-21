@@ -296,4 +296,195 @@ namespace MvvmNotificationChainer.UnitTests
             Assert.IsTrue (myChain.ObservedPropertyNames.Contains (m_ExpectedPropertyName));
         }
     }
+
+    public class when_using_NotificationChain_Execute : when_using_NotificationChain
+    {
+        protected Object m_SenderActual = null;
+        protected String m_PropertyNameActual = null;
+
+        protected Object m_Callback2_Sender = null;
+        protected String m_Callback2_PropertyName = null;
+        protected String m_Callback2_DependentPropertyName = null;
+
+        protected bool m_Callback1_WasCalled = false;
+        protected bool m_Callback2_WasCalled = false;
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            myChain.AndCall (() => m_Callback1_WasCalled = true);
+            myChain.AndCall ((sender, property, dependentProperty) =>
+                             {
+                                 m_Callback2_WasCalled = true;
+                                 m_Callback2_Sender = sender;
+                                 m_Callback2_PropertyName = property;
+                                 m_Callback2_DependentPropertyName = dependentProperty;
+                             });
+
+            m_SenderActual = this;
+            m_PropertyNameActual = Guid.NewGuid ().ToString ();
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.Execute (m_SenderActual, m_PropertyNameActual);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_callbacks_are_executed ()
+        {
+            Assert.IsTrue (m_Callback1_WasCalled, "m_Callback1_WasCalled");
+            Assert.IsTrue (m_Callback2_WasCalled, "m_Callback2_WasCalled");
+            Assert.AreEqual (m_SenderActual, m_Callback2_Sender, "m_Callback2_Sender");
+            Assert.AreEqual (m_PropertyNameActual, m_Callback2_PropertyName, "m_Callback2_PropertyName");
+            Assert.AreEqual (DependentPropertyName, m_Callback2_DependentPropertyName, "m_Callback2_DependentPropertyName");
+        }
+    }
+
+    public class when_using_NotificationChain_Execute_no_params : when_using_NotificationChain
+    {
+        protected bool m_Callback1_WasCalled = false;
+        protected bool m_Callback2_WasCalled = false;
+        protected bool m_Callback3_WasCalled = false;
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            myChain.AndCall (() => m_Callback1_WasCalled = true);
+            myChain.AndCall (() => m_Callback2_WasCalled = true);
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.Execute ();
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_callbacks_are_executed ()
+        {
+            Assert.IsTrue (m_Callback1_WasCalled, "m_Callback1_WasCalled");
+            Assert.IsTrue (m_Callback2_WasCalled, "m_Callback2_WasCalled");
+            Assert.IsFalse (m_Callback3_WasCalled, "m_Callback3_WasCalled");
+        }
+    }
+
+    public class when_using_NotificationChain_FinishAndExecute : when_using_NotificationChain
+    {
+        protected Object m_Callback2_SenderActual = null;
+        protected String m_Callback2_PropertyNameActual = null;
+
+        protected Object m_Callback2_Sender = null;
+        protected String m_Callback2_PropertyName = null;
+        protected String m_Callback2_DependentPropertyName = null;
+
+        protected bool m_Callback1_WasCalled = false;
+        protected bool m_Callback2_WasCalled = false;
+
+        protected override void Establish_context ()
+        {
+            base.Establish_context ();
+
+            m_Callback2_SenderActual = this;
+            m_Callback2_PropertyNameActual = Guid.NewGuid ().ToString ();
+        }
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.AndCall (() => m_Callback1_WasCalled = true)
+                       .AndCall ((sender, property, dependentProperty) =>
+                                 {
+                                     m_Callback2_WasCalled = true;
+                                     m_Callback2_Sender = sender;
+                                     m_Callback2_PropertyName = property;
+                                     m_Callback2_DependentPropertyName = dependentProperty;
+                                 })
+                       .Finish (m_Callback2_SenderActual, m_Callback2_PropertyNameActual);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_callbacks_are_executed ()
+        {
+            Assert.IsTrue (m_Callback1_WasCalled, "m_Callback1_WasCalled");
+            Assert.IsTrue (m_Callback2_WasCalled, "m_Callback2_WasCalled");
+            Assert.AreEqual (m_Callback2_SenderActual, m_Callback2_Sender, "m_Callback2_Sender");
+            Assert.AreEqual (m_Callback2_PropertyNameActual, m_Callback2_PropertyName, "m_Callback2_PropertyName");
+            Assert.AreEqual (DependentPropertyName, m_Callback2_DependentPropertyName, "m_Callback2_DependentPropertyName");
+        }
+    }
+
+    public class when_using_NotificationChain_Finish_false : when_using_NotificationChain
+    {
+        protected bool m_Callback1_WasCalled = false;
+        protected bool m_Callback2_WasCalled = false;
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.AndCall (() => m_Callback1_WasCalled = true)
+                       .AndCall (() => m_Callback2_WasCalled = true)
+                       .Finish (false);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_callbacks_are_not_executed ()
+        {
+            Assert.IsFalse (m_Callback1_WasCalled, "m_Callback1_WasCalled");
+            Assert.IsFalse (m_Callback2_WasCalled, "m_Callback2_WasCalled");
+        }
+    }
+    public class when_using_NotificationChain_Finish_true : when_using_NotificationChain
+    {
+        protected bool m_Callback1_WasCalled = false;
+        protected bool m_Callback2_WasCalled = false;
+
+        protected override void Because_of ()
+        {
+            try
+            {
+                myChain.AndCall (() => m_Callback1_WasCalled = true)
+                       .AndCall (() => m_Callback2_WasCalled = true)
+                       .Finish (true);
+            }
+            catch (Exception ex)
+            {
+                m_BecauseOfException = ex;
+            }
+        }
+
+        [Test]
+        public void then_callbacks_are_executed ()
+        {
+            Assert.IsTrue (m_Callback1_WasCalled, "m_Callback1_WasCalled");
+            Assert.IsTrue (m_Callback2_WasCalled, "m_Callback2_WasCalled");
+        }
+    }
 }
