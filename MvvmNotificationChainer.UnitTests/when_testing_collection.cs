@@ -120,6 +120,11 @@ namespace MvvmNotificationChainer.UnitTests
             myExpectedNotifications.Add ("TotalLineItems");
             myExpectedNotifications.Add ("TotalItemQuantity");
             myExpectedNotifications.Add ("TotalCost");
+            //myViewModel.LineItems = newLineItems;
+            myExpectedNotifications.Add ("LineItems");
+            myExpectedNotifications.Add ("TotalLineItems");
+            myExpectedNotifications.Add ("TotalItemQuantity");
+            myExpectedNotifications.Add ("TotalCost");
         }
 
         protected virtual void OnPropertyChanged (object sender, PropertyChangedEventArgs e)
@@ -138,6 +143,12 @@ namespace MvvmNotificationChainer.UnitTests
                 myViewModel.LineItems[1].Price = 50.00m;
                 myViewModel.LineItems.Add (Activator.CreateInstance<TLineItem> ());
                 myViewModel.LineItems.RemoveAt (2);
+                var newLineItems = new ObservableCollection<when_testing_2deep_property_dependency_chain_ILineItem> ();
+                var newLineItem1 = Activator.CreateInstance<TLineItem> ();
+                newLineItem1.Quantity = 1;
+                newLineItem1.Price = 99.99m;
+                newLineItems.Add (newLineItem1);
+                myViewModel.LineItems = newLineItems;
             }
             catch (Exception ex)
             {
