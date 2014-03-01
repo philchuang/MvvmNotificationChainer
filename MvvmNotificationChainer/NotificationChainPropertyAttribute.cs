@@ -27,6 +27,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             {
                 if (!prop.GetCustomAttributes (typeof (NotificationChainPropertyAttribute), true).Any ()) continue;
                 var propGetter = prop.GetGetMethod ();
+                if (propGetter == null) continue;
                 if (propGetter.GetParameters ().Any ())
                     throw new InvalidOperationException ("NotificationChainPropertyAttribute cannot be applied to property {0}.{1} because it has parameters."
                                                              .FormatWith (prop.DeclaringType.FullName, prop.Name));
