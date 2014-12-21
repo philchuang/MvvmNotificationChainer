@@ -19,14 +19,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 
             var objType = obj.GetType ();
 
-            foreach (var prop in
-                objType.GetProperties (BindingFlags.Public | BindingFlags.Instance)
-                       .Union (objType.GetProperties (BindingFlags.NonPublic | BindingFlags.Instance))
-                       .Union (objType.GetProperties (BindingFlags.Public | BindingFlags.Static))
-                       .Union (objType.GetProperties (BindingFlags.NonPublic | BindingFlags.Static)))
+            foreach (var prop in objType.GetRuntimeProperties())
             {
                 if (!prop.GetCustomAttributes (typeof (NotificationChainPropertyAttribute), true).Any ()) continue;
-                var propGetter = prop.GetGetMethod ();
+                var propGetter = prop.GetMethod;
                 if (propGetter == null) continue;
                 if (propGetter.GetParameters ().Any ())
                     throw new InvalidOperationException ("NotificationChainPropertyAttribute cannot be applied to property {0}.{1} because it has parameters."
