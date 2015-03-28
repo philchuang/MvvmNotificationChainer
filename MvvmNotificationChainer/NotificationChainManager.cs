@@ -16,14 +16,14 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
     /// </summary>
     public class NotificationChainManager
     {
-        public IEnumerable<Object> ObservedObjects { get { return myObservedObjects.Keys.Select (o => o); } }
-
         public bool IsDisposed { get; private set; }
+
+        public IEnumerable<Object> ObservedObjects => myObservedObjects.Keys.Select (o => o);
 
         /// <summary>
         /// Map of an observed object to the delegate to remove the handler for it
         /// </summary>
-        private Dictionary<Object, Action> myObservedObjects = new Dictionary<object, Action> ();
+        private Dictionary<Object, Action> myObservedObjects = new Dictionary<Object, Action> ();
 
         /// <summary>
         /// Map of dependent property name to notification chain manager
@@ -38,7 +38,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <summary>
         /// Map of an observed object to a map of property name to property value
         /// </summary>
-        private Dictionary<Object, Dictionary<String, INotifyPropertyChanged>> myDeepPreviousObservedValues = new Dictionary<object, Dictionary<string, INotifyPropertyChanged>> ();
+        private Dictionary<Object, Dictionary<String, INotifyPropertyChanged>> myDeepPreviousObservedValues = new Dictionary<Object, Dictionary<string, INotifyPropertyChanged>> ();
 
         /// <summary>
         /// Map of dependent property name to notification chain
@@ -60,7 +60,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public NotificationChainManager (INotifyPropertyChanged notifyingObject)
             : this ()
         {
-            notifyingObject.ThrowIfNull ("INotifyPropertyChanged");
+            notifyingObject.ThrowIfNull (nameof (notifyingObject));
 
             Observe (notifyingObject);
         }
@@ -114,7 +114,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public void AddDefaultCall (Action onNotifyingPropertyChanged)
         {
-            onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
+            onNotifyingPropertyChanged.ThrowIfNull (nameof (onNotifyingPropertyChanged));
 
             if (IsDisposed) return;
 
@@ -128,7 +128,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public void AddDefaultCall (NotificationChainCallback onNotifyingPropertyChanged)
         {
-            onNotifyingPropertyChanged.ThrowIfNull ("onNotifyingPropertyChanged");
+            onNotifyingPropertyChanged.ThrowIfNull (nameof (onNotifyingPropertyChanged));
 
             if (IsDisposed) return;
 
@@ -142,7 +142,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain CreateOrGet<T1> (Expression<Func<T1>> propGetter)
         {
-            propGetter.ThrowIfNull ("propGetter");
+            propGetter.ThrowIfNull (nameof (propGetter));
 
             if (IsDisposed) return null;
 
@@ -157,7 +157,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain CreateOrGet ([CallerMemberName] String dependentPropertyName = null)
         {
-            dependentPropertyName.ThrowIfNull ("dependentPropertyName");
+            dependentPropertyName.ThrowIfNull (nameof (dependentPropertyName));
 
             if (IsDisposed) return null;
 
@@ -252,7 +252,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain Get ([CallerMemberName] String dependentPropertyName = null)
         {
-            dependentPropertyName.ThrowIfNull ("dependentPropertyName");
+            dependentPropertyName.ThrowIfNull (nameof (dependentPropertyName));
 
             if (IsDisposed) return null;
 
@@ -267,7 +267,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public void Clear ([CallerMemberName] String dependentPropertyName = null)
         {
-            dependentPropertyName.ThrowIfNull ("dependentPropertyName");
+            dependentPropertyName.ThrowIfNull (nameof (dependentPropertyName));
 
             if (IsDisposed) return;
 
@@ -284,7 +284,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="notifyingObject"></param>
         public void Observe (Object notifyingObject)
         {
-            notifyingObject.ThrowIfNull ("notifyingObject");
+            notifyingObject.ThrowIfNull (nameof (notifyingObject));
 
             if (IsDisposed) return;
 
@@ -303,7 +303,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="notifyingObject"></param>
         public void Observe (INotifyPropertyChanged notifyingObject)
         {
-            notifyingObject.ThrowIfNull ("notifyingObject");
+            notifyingObject.ThrowIfNull (nameof (notifyingObject));
 
             if (IsDisposed) return;
 
@@ -321,9 +321,9 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
             Action<PropertyChangedEventHandler> addEventAction,
             Action<PropertyChangedEventHandler> removeEventAction)
         {
-            notifyingObject.ThrowIfNull ("notifyingObject");
-            addEventAction.ThrowIfNull ("addEventAction");
-            removeEventAction.ThrowIfNull ("removeEventAction");
+            notifyingObject.ThrowIfNull (nameof (notifyingObject));
+            addEventAction.ThrowIfNull (nameof (addEventAction));
+            removeEventAction.ThrowIfNull (nameof (removeEventAction));
 
             if (IsDisposed) return;
 
@@ -342,7 +342,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="notifyingObject"></param>
         public void StopObserving (Object notifyingObject)
         {
-            notifyingObject.ThrowIfNull ("notifyingObject");
+            notifyingObject.ThrowIfNull (nameof (notifyingObject));
 
             if (IsDisposed) return;
 
@@ -365,7 +365,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns>whether or not the callbacks were triggered</returns>
         public void Publish (Object sender, PropertyChangedEventArgs args)
         {
-            sender.ThrowIfNull ("sender");
+            sender.ThrowIfNull (nameof (sender));
 
             if (IsDisposed) return;
 
@@ -427,7 +427,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="args"></param>
         public void ExecuteAllChains (Object sender, PropertyChangedEventArgs args)
         {
-            sender.ThrowIfNull ("sender");
+            sender.ThrowIfNull (nameof (sender));
 
             if (IsDisposed) return;
 

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Com.PhilChuang.Utils.MvvmNotificationChainer
 {
@@ -19,12 +18,12 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// </summary>
         public const String ObservedCollectionPropertyName = ".";
 
+        public IEnumerable<INotifyCollectionChanged> ObservedCollections => myObservedCollections.Keys;
+
         /// <summary>
         /// Map of an observed collection to the delegate to remove the handler for it
         /// </summary>
         private Dictionary<INotifyCollectionChanged, Action> myObservedCollections = new Dictionary<INotifyCollectionChanged, Action> ();
-
-        public IEnumerable<INotifyCollectionChanged> ObservedCollections { get { return myObservedCollections.Keys; } }
 
         private NotifyCollectionChangedEventHandler myCollectionChangedEventHandler;
 
@@ -36,7 +35,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         public CollectionNotificationChainManager (INotifyCollectionChanged notifyingCollection)
             : this ()
         {
-            notifyingCollection.ThrowIfNull ("notifyingCollection");
+            notifyingCollection.ThrowIfNull (nameof (notifyingCollection));
 
             ObserveCollection (notifyingCollection);
         }
@@ -61,7 +60,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="notifyingCollection"></param>
         public void ObserveCollection (INotifyCollectionChanged notifyingCollection)
         {
-            notifyingCollection.ThrowIfNull ("notifyingCollection");
+            notifyingCollection.ThrowIfNull (nameof (notifyingCollection));
 
             if (IsDisposed) return;
 
@@ -91,7 +90,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <param name="notifyingCollection"></param>
         public void StopObservingCollection (INotifyCollectionChanged notifyingCollection)
         {
-            notifyingCollection.ThrowIfNull ("notifyingCollection");
+            notifyingCollection.ThrowIfNull (nameof (notifyingCollection));
 
             if (IsDisposed) return;
 
@@ -119,8 +118,10 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         private void OnCollectionChanged (object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
+            {
                 foreach (var oldItem in e.OldItems)
                     base.StopObserving (oldItem);
+            }
             if (e.NewItems != null)
             {
                 foreach (var newItem in e.NewItems)

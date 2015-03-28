@@ -25,8 +25,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
                 var propGetter = prop.GetMethod;
                 if (propGetter == null) continue;
                 if (propGetter.GetParameters ().Any ())
-                    throw new InvalidOperationException ("NotificationChainPropertyAttribute cannot be applied to property {0}.{1} because it has parameters."
-                                                             .FormatWith (prop.DeclaringType.FullName, prop.Name));
+                    throw new InvalidOperationException ($"NotificationChainPropertyAttribute cannot be applied to property {prop.DeclaringType.FullName}.{prop.Name} because it has parameters.");
                 var value = propGetter.Invoke (!propGetter.IsStatic ? obj : null, null);
             }
 
