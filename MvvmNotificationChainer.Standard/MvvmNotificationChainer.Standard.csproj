@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <RootNamespace>Com.PhilChuang.Utils.MvvmNotificationChainer</RootNamespace>
+    <PackageId>MvvmNotificationChainer</PackageId>
+    <Version>2.0.0</Version>
+    <Authors>PhilChuang.com</Authors>
+    <Company>PhilChuang.com</Company>
+    <Product>MvvmNotificationChainer</Product>
+    <Description>Class library for fluent chaining of ViewModel property notifications. Targets .NET Standard 1.0</Description>
+    <Copyright>Copyright PhilChuang.com 2017</Copyright>
+    <PackageLicenseUrl>http://github.com/philchuang/MvvmNotificationChainer/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>http://github.com/philchuang/MvvmNotificationChainer</PackageProjectUrl>
+    <PackageTags>MVVM INotifyPropertyChanged</PackageTags>
+  </PropertyGroup>
+
+</Project>

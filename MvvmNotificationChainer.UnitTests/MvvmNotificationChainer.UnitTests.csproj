@@ -72,13 +72,16 @@
     <Compile Include="when_using_NotificationChainPropertyAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MvvmNotificationChainer\MvvmNotificationChainer.csproj">
-      <Project>{310522d6-e128-4eb2-83bd-888cbf10cea6}</Project>
-      <Name>MvvmNotificationChainer</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MvvmNotificationChainer.Standard\MvvmNotificationChainer.Standard.csproj">
+      <Project>{98941af4-a95d-4e8c-8fdd-956625022117}</Project>
+      <Name>MvvmNotificationChainer.Standard</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
