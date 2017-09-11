@@ -15,4 +15,8 @@
     <PackageTags>MVVM INotifyPropertyChanged</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
+  </ItemGroup>
+
 </Project>

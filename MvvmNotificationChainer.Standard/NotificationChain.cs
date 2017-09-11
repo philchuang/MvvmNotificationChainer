@@ -122,7 +122,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain OnRegex (String regex)
         {
-            regex.ThrowIfNullOrBlank ("regex");
+            regex.ThrowIfNullOrWhiteSpace ("regex");
 
             if (IsFinished || IsDisposed) return this;
 
@@ -154,7 +154,7 @@ namespace Com.PhilChuang.Utils.MvvmNotificationChainer
         /// <returns></returns>
         public NotificationChain On (String propertyName)
         {
-            propertyName.ThrowIfNullOrBlank ("propertyName");
+            propertyName.ThrowIfNullOrWhiteSpace ("propertyName");
 
             if (IsFinished || IsDisposed) return this;
 
