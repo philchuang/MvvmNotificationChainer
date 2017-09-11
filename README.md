@@ -3,7 +3,7 @@ MvvmNotificationChainer
 
 What is it?
 -----------
-Portable Class Library that simplifies chaining ViewModel property PropertyChanged events.
+.NET Standard 1.0 library that simplifies chaining ViewModel property PropertyChanged events.
 
 Why would I want to use it?
 ---------------------------
@@ -376,7 +376,7 @@ Implemented Features:
 
 To Dos:
 
-* Write more unit tests (I know, I suck at TDD)
+* Write more unit tests
 
 Caveats:
 
